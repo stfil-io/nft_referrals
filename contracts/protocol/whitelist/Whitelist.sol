@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import '../../dependencies/openzeppelin/contracts/access/Ownable.sol';
 import {MerkleProof} from '../../dependencies/openzeppelin/contracts/utils/MerkleProof.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
@@ -9,14 +10,8 @@ import {Errors} from '../libraries/helpers/Errors.sol';
  * @notice Implement whitelist update and verification
  * @author STFIL
  **/
-contract Whitelist {
-  address internal immutable _owner;
+contract Whitelist is Ownable {
   bytes32 public root;
-
-  modifier onlyOwner() {
-    require(msg.sender == _owner, Errors.WL_INVALID_PERMISSIONS);
-    _;
-  }
 
   /**
    * @dev Emitted on setRoot()
@@ -26,7 +21,6 @@ contract Whitelist {
 
   constructor(bytes32 merkleroot) {
     root = merkleroot;
-    _owner = msg.sender;
   }
 
   /**
