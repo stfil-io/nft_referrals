@@ -14,19 +14,23 @@ contract DigitalFrogs is ERC721, Ownable {
 
     Whitelist internal _whitelist;
 
+    mapping(address => bool) internal _wlAddrsMint;
+
+    uint256 public MAX_SUPPLY;
+
     uint256 public MINT_PRICE = 1 ether;
 
     bool public PUBLIC_SALE_ON = false;
 
-    mapping(address => bool) internal _wlAddrsMint;
-
-    constructor(string memory name, string memory symbol, Whitelist whitelist) ERC721(name, symbol) {
+    constructor(string memory name, string memory symbol, uint256 maxSupply, Whitelist whitelist) ERC721(name, symbol) {
         _whitelist = whitelist;
+        MAX_SUPPLY = maxSupply;
     }
 
     function wlMint(bytes32[] memory proof) external payable {
         require(msg.sender != address(0), Errors.DF_INVALID_ADDRESS);
         require(!_wlAddrsMint[msg.sender], Errors.DF_ALREADY_MINT);
+        require(_totalSupply + 1 <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
         require(_whitelist.verify(proof, keccak256(abi.encode(msg.sender))), Errors.DF_MUST_BE_WHITELISTED);
         _safeMint(msg.sender, _totalSupply);
         _wlAddrsMint[msg.sender] = true;
@@ -36,6 +40,7 @@ contract DigitalFrogs is ERC721, Ownable {
     function mint(uint256 quantity) external payable {
         require(msg.sender != address(0), Errors.DF_INVALID_ADDRESS);
         require(PUBLIC_SALE_ON, Errors.DF_PUBLIC_SALE_NOT_OPEN);
+        require(_totalSupply + quantity <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
         require(msg.value == quantity * MINT_PRICE, Errors.DF_MINT_PRICE_ERROR);
         for(uint i = 0; i < quantity; i++) {
             _safeMint(msg.sender, _totalSupply + i);

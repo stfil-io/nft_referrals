@@ -17,4 +17,5 @@ library Errors {
   string public constant DF_MUST_BE_WHITELISTED = '53';
   string public constant DF_PUBLIC_SALE_NOT_OPEN = '54';
   string public constant DF_MINT_PRICE_ERROR = '55';
+  string public constant DF_MAX_SUPPLY_EXCEEDED = '56';
 }
