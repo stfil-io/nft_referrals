@@ -10,6 +10,7 @@ import "../../utils/Address.sol";
 import "../../utils/Context.sol";
 import "../../utils/Strings.sol";
 import "../../utils/introspection/ERC165.sol";
+import '../../../../../protocol/libraries/utils/FilAddress.sol';
 
 /**
  * @dev Implementation of https://eips.ethereum.org/EIPS/eip-721[ERC721] Non-Fungible Token Standard, including
@@ -19,6 +20,7 @@ import "../../utils/introspection/ERC165.sol";
 contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     using Address for address;
     using Strings for uint256;
+    using FilAddress for address;
 
     // Token name
     string private _name;
@@ -61,7 +63,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      */
     function balanceOf(address owner) public view virtual override returns (uint256) {
         require(owner != address(0), "ERC721: address zero is not a valid owner");
-        return _balances[owner];
+        return _balances[owner.normalize()];
     }
 
     /**
@@ -70,7 +72,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     function ownerOf(uint256 tokenId) public view virtual override returns (address) {
         address owner = _ownerOf(tokenId);
         require(owner != address(0), "ERC721: invalid token ID");
-        return owner;
+        return owner.normalize();
     }
 
     /**
@@ -110,11 +112,13 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      * @dev See {IERC721-approve}.
      */
     function approve(address to, uint256 tokenId) public virtual override {
-        address owner = ERC721.ownerOf(tokenId);
+        to = to.normalize();
+        address owner = ERC721.ownerOf(tokenId).normalize();
         require(to != owner, "ERC721: approval to current owner");
 
+        address sender = _msgSender().normalize();
         require(
-            _msgSender() == owner || isApprovedForAll(owner, _msgSender()),
+            sender == owner || isApprovedForAll(owner, sender),
             "ERC721: approve caller is not token owner or approved for all"
         );
 
@@ -134,14 +138,14 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      * @dev See {IERC721-setApprovalForAll}.
      */
     function setApprovalForAll(address operator, bool approved) public virtual override {
-        _setApprovalForAll(_msgSender(), operator, approved);
+        _setApprovalForAll(_msgSender().normalize(), operator.normalize(), approved);
     }
 
     /**
      * @dev See {IERC721-isApprovedForAll}.
      */
     function isApprovedForAll(address owner, address operator) public view virtual override returns (bool) {
-        return _operatorApprovals[owner][operator];
+        return _operatorApprovals[owner.normalize()][operator.normalize()];
     }
 
     /**
@@ -149,24 +153,24 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      */
     function transferFrom(address from, address to, uint256 tokenId) public virtual override {
         //solhint-disable-next-line max-line-length
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
+        require(_isApprovedOrOwner(_msgSender().normalize(), tokenId), "ERC721: caller is not token owner or approved");
 
-        _transfer(from, to, tokenId);
+        _transfer(from.normalize(), to.normalize(), tokenId);
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(address from, address to, uint256 tokenId) public virtual override {
-        safeTransferFrom(from, to, tokenId, "");
+        safeTransferFrom(from.normalize(), to.normalize(), tokenId, "");
     }
 
     /**
      * @dev See {IERC721-safeTransferFrom}.
      */
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data) public virtual override {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: caller is not token owner or approved");
-        _safeTransfer(from, to, tokenId, data);
+        require(_isApprovedOrOwner(_msgSender().normalize(), tokenId), "ERC721: caller is not token owner or approved");
+        _safeTransfer(from.normalize(), to.normalize(), tokenId, data);
     }
 
     /**
