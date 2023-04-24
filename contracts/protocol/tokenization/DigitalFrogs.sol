@@ -3,17 +3,16 @@ pragma solidity ^0.8.0;
 
 import '../../dependencies/openzeppelin/contracts/access/Ownable.sol';
 import {ERC721} from '../../dependencies/openzeppelin/contracts/token/ERC721/ERC721.sol';
+import {ERC721Enumerable} from '../../dependencies/openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
 import {Whitelist} from '../whitelist/Whitelist.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {FilAddress} from '../libraries/utils/FilAddress.sol';
 
-contract DigitalFrogs is ERC721, Ownable {
+contract DigitalFrogs is ERC721Enumerable, Ownable {
     using FilAddress for address;
 
     // Base URI
     string internal baseURI;
-
-    uint256 internal _totalSupply; 
 
     Whitelist internal _whitelist;
 
@@ -42,14 +41,16 @@ contract DigitalFrogs is ERC721, Ownable {
      */
     function wlMint(bytes32[] memory proof) external payable {
         address sender = msg.sender.normalize();
+
         require(sender != address(0), Errors.DF_INVALID_ADDRESS);
         require(!_wlAddrsMint[sender], Errors.DF_ALREADY_MINT);
-        require(_totalSupply + 1 <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
+        require(totalSupply() + 1 <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
         require(_whitelist.verify(proof, keccak256(abi.encode(sender))), Errors.DF_MUST_BE_WHITELISTED);
-        _safeMint(sender, _totalSupply);
+
+        uint256 tokenId = totalSupply();
+        _safeMint(sender, tokenId);
+        _tokenIdsIntegral[tokenId] = _random(tokenId);
         _wlAddrsMint[sender] = true;
-        _tokenIdsIntegral[_totalSupply] = _random(_totalSupply);
-        _totalSupply += 1;
     }
 
     /**
@@ -58,29 +59,23 @@ contract DigitalFrogs is ERC721, Ownable {
      */
     function mint(uint256 quantity) external payable {
         address sender = msg.sender.normalize();
+
         require(sender != address(0), Errors.DF_INVALID_ADDRESS);
         require(PUBLIC_SALE_ON, Errors.DF_PUBLIC_SALE_NOT_OPEN);
-        require(_totalSupply + quantity <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
+        require(totalSupply() + quantity <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
         require(msg.value == quantity * MINT_PRICE, Errors.DF_MINT_PRICE_ERROR);
+
         for(uint i = 0; i < quantity; i++) {
-            _safeMint(sender, _totalSupply + i);
-            _tokenIdsIntegral[_totalSupply + i] = _random(_totalSupply + i);
-
+            uint256 tokenId = totalSupply();
+            _safeMint(sender, tokenId);
+            _tokenIdsIntegral[tokenId] = _random(tokenId);
         }
-        _totalSupply += quantity;
     } 
-
-    /**
-     * @return the current total supply
-     **/
-    function totalSupply() external view  returns (uint256) {
-       return _totalSupply;
-    }
 
     /**
      * @dev Obtain the corresponding points according to the tokenId of the NFT
      **/
-    function getIntegral(uint256 tokenId) external view returns(uint256) {
+    function getIntegralByTokenId(uint256 tokenId) external view returns(uint256) {
         return _tokenIdsIntegral[tokenId];
     }
 

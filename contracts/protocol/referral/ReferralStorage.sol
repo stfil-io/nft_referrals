@@ -49,7 +49,7 @@ contract ReferralStorage {
      * @param referralCode The specified referral code
      * @return The returns the owner address 
      **/
-    function getAddr(uint32 referralCode) external view returns(address) {
+    function getAddrByReferralCode(uint32 referralCode) external view returns(address) {
         return _codeOwners[referralCode];
     }
 
