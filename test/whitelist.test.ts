@@ -11,13 +11,13 @@ describe('Whitelist', () => {
     it('Should success while verify user0', async () => {
         const {whitelist, merkle, users} = env
         const user = users[0]
-        const {proof, leaf} =  merkle.getLeafProof(user.address)
+        const {proof, leaf} =  merkle.getLeafProofAndLeaf(user.address)
         expect(true).to.be.equal(await whitelist.verify(proof, leaf))
     })
     
     it('Should fail while verify deploy', async () => {
         const {whitelist, merkle, deployer} = env
-        const {proof, leaf} =  merkle.getLeafProof(deployer.address)
+        const {proof, leaf} =  merkle.getLeafProofAndLeaf(deployer.address)
         expect(false).to.be.equal(await whitelist.verify(proof, leaf))
     })
 
@@ -35,7 +35,7 @@ describe('Whitelist', () => {
         const merkle = new Merkle(whitelistAddresses)
         await whitelist.setRoot(merkle.getRoot())
 
-        const {proof, leaf} =  merkle.getLeafProof(user.address)
+        const {proof, leaf} =  merkle.getLeafProofAndLeaf(user.address)
         expect(false).to.be.equal(await whitelist.verify(proof, leaf))
     })
 
@@ -47,7 +47,7 @@ describe('Whitelist', () => {
         const merkle = new Merkle(whitelistAddresses)
         await whitelist.setRoot(merkle.getRoot())
 
-        const {proof, leaf} =  merkle.getLeafProof(deployer.address)
+        const {proof, leaf} =  merkle.getLeafProofAndLeaf(deployer.address)
         expect(true).to.be.equal(await whitelist.verify(proof, leaf))
     })
 });

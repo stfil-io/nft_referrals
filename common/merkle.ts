@@ -16,6 +16,12 @@ export class Merkle {
     getLeafProof(addr: string) {
         const leaf = keccak256(addr)
         const proof = this.merkleTree.getHexProof(leaf)
+        return proof
+    }
+
+    getLeafProofAndLeaf(addr: string) {
+        const leaf = keccak256(addr)
+        const proof = this.merkleTree.getHexProof(leaf)
         return {proof, leaf}
     }
 } 

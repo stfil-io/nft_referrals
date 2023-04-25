@@ -45,7 +45,7 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
         require(sender != address(0), Errors.DF_INVALID_ADDRESS);
         require(!_wlAddrsMint[sender], Errors.DF_ALREADY_MINT);
         require(totalSupply() + 1 <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
-        require(_whitelist.verify(proof, keccak256(abi.encode(sender))), Errors.DF_MUST_BE_WHITELISTED);
+        require(_whitelist.verify(proof, keccak256(abi.encodePacked(msg.sender))), Errors.DF_MUST_BE_WHITELISTED);
 
         uint256 tokenId = totalSupply();
         _safeMint(sender, tokenId);

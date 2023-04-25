@@ -33,7 +33,7 @@ contract ReferralStorage {
         require(sender != address(0), Errors.RS_INVALID_ADDRESS);
         require(referralCode >= MIN_REFERRAL_CODE && referralCode <= MAX_REFERRAL_CODE, Errors.RS_REFERRAL_CODE_MUST_BE_IN_THE_RANGE);
         require(_codeOwners[referralCode] == address(0), Errors.RS_REFERRAL_CODE_ALREADY_EXIST);
-        require(_ownerCodes[sender].length() <= PER_MAX_REFERRAL_CODE_NUM, Errors.RS_REFERRAL_CODE_NUM_LIMITED);
+        require(_ownerCodes[sender].length() < PER_MAX_REFERRAL_CODE_NUM, Errors.RS_REFERRAL_CODE_NUM_LIMITED);
 
         _codeOwners[referralCode] = sender;
 
