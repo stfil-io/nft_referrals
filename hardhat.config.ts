@@ -5,6 +5,7 @@ import "hardhat-contract-sizer"
 import {useEnv} from "./common/env";
 import 'solidity-coverage'
 import 'hardhat-gas-reporter'
+import "./tasks";
 
 const DEPLOYER = useEnv("DEPLOYER");
 

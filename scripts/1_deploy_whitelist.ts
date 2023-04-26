@@ -3,7 +3,7 @@ import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from 
 import {isTargetNetwork} from "../common/blockchain-utils";
 import {Whitelist} from "../typechain-types";
 import { useEnv } from "../common/env";
-import fs, {readFileSync} from 'fs'
+import fs from 'fs'
 import { Merkle } from "../common/merkle";
 
 async function main() {
@@ -26,7 +26,6 @@ async function main() {
     
     const whitelist = await JSON.parse(fs.readFileSync(whitelistJSONPath, 'utf8'))
     const merkle = new Merkle(whitelist)
-    console.log("whitelist: ", whitelist)
 
     const WhitelistContract = await ethers.getContractFactory("Whitelist")
     const WhitelistAddress = <Whitelist>await WhitelistContract.deploy(merkle.getRoot())
