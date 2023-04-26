@@ -1,7 +1,6 @@
 import {expect} from 'chai';
 import {Environment, initializeEnv} from "./helpers/environment";
-import { Merkle } from '../common/merkle';
-import { DF_ALREADY_MINT, DF_MAX_SUPPLY_EXCEEDED, DF_MINT_PRICE_ERROR, DF_MUST_BE_WHITELISTED, DF_PUBLIC_SALE_NOT_OPEN } from '../common/Errors';
+import { DF_ALREADY_MINT, DF_MAX_SUPPLY_EXCEEDED, DF_MINT_PRICE_ERROR, DF_PUBLIC_SALE_NOT_OPEN } from '../common/Errors';
 import { ethers } from 'hardhat';
 
 describe('DigitalFrogs', () => {
@@ -102,6 +101,62 @@ describe('DigitalFrogs', () => {
         await digitalFrogs.connect(deployer).withdraw()
         expect(prevBalance).to.be.lt(await ethers.provider.getBalance(deployer.address))
 
+    })
+
+    
+    it('Should nft integral when user0 mint quantity 2', async () => {
+        const {digitalFrogs, users, deployer} = env
+       
+        const user = users[0]
+        const quantity = 2
+        const mintPrice = await digitalFrogs.MINT_PRICE()
+
+        await digitalFrogs.connect(deployer).setPublicSaleOn(true)
+        await digitalFrogs.connect(user).mint(quantity, {value: mintPrice.mul(quantity)})
+
+        const indexs = (await digitalFrogs.balanceOf(user.address)).toNumber()
+
+        for(let i=0; i<indexs; i++) {
+            const tokenId = await digitalFrogs.tokenOfOwnerByIndex(user.address, i)
+            const integral = await digitalFrogs.getIntegralByTokenId(tokenId)
+            expect(integral).to.gt(0)
+        }
+    })
+
+    it('Set base URI', async () => {
+        const {digitalFrogs, users, deployer, merkle} = env
+        const user = users[0]
+
+        const baseURI = "https://example.com/"
+        await digitalFrogs.connect(deployer).setBaseURI(baseURI)
+
+        const proof =  merkle.getLeafProof(user.address)
+        await digitalFrogs.connect(user).wlMint(proof)
+        const tokenId = await digitalFrogs.tokenOfOwnerByIndex(user.address, 0)
+
+        const tokenURI = baseURI + tokenId
+        expect(tokenURI).to.be.equal(await digitalFrogs.tokenURI(tokenId))
+    })
+
+    it('Set mint price', async () => {
+        const {digitalFrogs, deployer} = env
+
+        const mintPrice = ethers.utils.parseEther("50")
+
+        await digitalFrogs.connect(deployer).setMintPrice(mintPrice)
+        expect(mintPrice).to.be.equal(await digitalFrogs.MINT_PRICE())
+
+    })
+
+    it('Set integral range', async () => {
+        const {digitalFrogs, deployer} = env
+
+        const minIntegral = 1
+        const maxIntegral = 10
+
+        await digitalFrogs.connect(deployer).setIntegralRange(minIntegral, maxIntegral)
+        expect(minIntegral).to.be.equal(await digitalFrogs.MIN_INTEGRAL())
+        expect(maxIntegral).to.be.equal(await digitalFrogs.MAX_INTEGRAL())
     })
     
 });
