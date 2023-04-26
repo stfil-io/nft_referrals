@@ -5,11 +5,8 @@ dotenv.config({path: '.env'})
 type IEnvVars =
     | 'TARGET_NETWORK'
     | 'DEPLOYER'
-    | 'EMERGENCY_ADMIN_KEY'
-    | 'POOL_ADMIN_KEY'
-    | 'CONTRACTS_ADMIN_KEY'
-    | 'TREASURY_KEY'
     | 'NETWORK_GATEWAY'
+    | 'WHITELIST_JSON_PATH'
 
 export function useEnv(key: IEnvVars | IEnvVars[], _default = ''): string {
     if (typeof key === 'string') {

@@ -7,9 +7,6 @@ import 'solidity-coverage'
 import 'hardhat-gas-reporter'
 
 const DEPLOYER = useEnv("DEPLOYER");
-const EMERGENCY_ADMIN_KEY = useEnv("EMERGENCY_ADMIN_KEY");
-const CONTRACTS_ADMIN_KEY = useEnv("CONTRACTS_ADMIN_KEY");
-const TREASURY_KEY = useEnv("TREASURY_KEY");
 
 const config: HardhatUserConfig = {
     solidity: {
@@ -26,12 +23,12 @@ const config: HardhatUserConfig = {
         hyperspace: {
             chainId: 3141,
             url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER, EMERGENCY_ADMIN_KEY, CONTRACTS_ADMIN_KEY, TREASURY_KEY],
+            accounts: [DEPLOYER],
         },
         mainnet: {
             chainId: 314,
             url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER, EMERGENCY_ADMIN_KEY, CONTRACTS_ADMIN_KEY, TREASURY_KEY],
+            accounts: [DEPLOYER],
         }
     },
     gasReporter: {

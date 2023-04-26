@@ -7,7 +7,6 @@ import {
     ReferralStorage
 } from "../../typechain-types";
 import { Merkle } from "../../common/merkle";
-import MerkleTree from "merkletreejs";
 
 export interface Environment {
     whitelist: Whitelist;
