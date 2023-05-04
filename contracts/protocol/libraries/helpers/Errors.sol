@@ -9,6 +9,7 @@ pragma solidity ^0.8.0;
  *  - WL = Whitelist
  *  - DF = DigitalFrogs
  *  - RS = ReferralStorage
+ *  - MATH = Math libraries
  */
 library Errors {
   //contract specific errors
@@ -20,9 +21,15 @@ library Errors {
   string public constant DF_PUBLIC_SALE_NOT_OPEN = '54';
   string public constant DF_MINT_PRICE_ERROR = '55';
   string public constant DF_MAX_SUPPLY_EXCEEDED = '56';
+  string public constant DF_INVALID_POOL_ADDRESS = '57';
+  string public constant DF_STFIL_POOL_CALL_FAILED = '58';
+  string public constant DF_WRONG_PERCENTAGE_RANGE = '59';
 
-  string public constant RS_INVALID_ADDRESS = '57';
-  string public constant RS_REFERRAL_CODE_MUST_BE_IN_THE_RANGE = '58';
-  string public constant RS_REFERRAL_CODE_ALREADY_EXIST = '59';
-  string public constant RS_REFERRAL_CODE_NUM_LIMITED = '60';
+  string public constant RS_INVALID_ADDRESS = '60';
+  string public constant RS_REFERRAL_CODE_MUST_BE_IN_THE_RANGE = '61';
+  string public constant RS_REFERRAL_CODE_ALREADY_EXIST = '62';
+  string public constant RS_REFERRAL_CODE_NUM_LIMITED = '63';
+
+  string public constant MATH_MULTIPLICATION_OVERFLOW = '64';
+  string public constant MATH_DIVISION_BY_ZERO = '65';
 }
