@@ -7,6 +7,8 @@ type IEnvVars =
     | 'DEPLOYER'
     | 'NETWORK_GATEWAY'
     | 'WHITELIST_JSON_PATH'
+    | 'BASE_URI'
+    | 'STFIL_POOL'
 
 export function useEnv(key: IEnvVars | IEnvVars[], _default = ''): string {
     if (typeof key === 'string') {

@@ -35,8 +35,23 @@ export const deployWhitelist = async () => {
 }
 
 export const deployDigitalFrogs = async () => {
+    const STFILPool = await ethers.getContractFactory("StakingPool")
+    const STFILPoolAddress = await STFILPool.deploy()
+    await STFILPoolAddress.deployed()
+
     const DigitalFrogs = await ethers.getContractFactory("DigitalFrogs")
-    const DigitalFrogsAddress = await DigitalFrogs.deploy("DigitalFrogs", "DigitalFrogs", 5, testEnv.whitelist.address)
+
+    const name = "DigitalFrogs"
+    const symbol = "DigitalFrogs"
+    const baseURI = ""
+    const mintPrice = ethers.utils.parseEther("10") 
+    const maxSupply = 10 
+    const publicMintUpperLimit = 5 
+    const increasePercentage = 100 
+    const increaseInterval = 2 
+    const stFILPool = STFILPoolAddress.address 
+    const whitelist = testEnv.whitelist.address
+    const DigitalFrogsAddress = await DigitalFrogs.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, increasePercentage, increaseInterval, stFILPool, whitelist)
     await DigitalFrogsAddress.deployed()
 
     return <DigitalFrogs>DigitalFrogsAddress

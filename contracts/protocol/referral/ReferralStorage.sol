@@ -11,7 +11,7 @@ contract ReferralStorage {
 
     uint32 public constant PER_MAX_REFERRAL_CODE_NUM = 10;
 
-    uint32 public constant MIN_REFERRAL_CODE = 100000;
+    uint32 public constant MIN_REFERRAL_CODE = 1000;
 
     uint32 public constant MAX_REFERRAL_CODE = 1000000000;
 

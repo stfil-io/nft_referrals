@@ -1,6 +1,6 @@
 import {expect} from 'chai';
 import {Environment, initializeEnv} from "./helpers/environment";
-import { DF_ALREADY_MINT, DF_MAX_SUPPLY_EXCEEDED, DF_MINT_PRICE_ERROR, DF_PUBLIC_SALE_NOT_OPEN } from '../common/Errors';
+import { DF_ALREADY_MINT, DF_MAX_SUPPLY_EXCEEDED, DF_MINT_PRICE_ERROR, DF_MINT_QUANTITY_EXCEEDED, DF_PUBLIC_SALE_NOT_OPEN } from '../common/Errors';
 import { ethers } from 'hardhat';
 
 describe('DigitalFrogs', () => {
@@ -30,7 +30,7 @@ describe('DigitalFrogs', () => {
 
     it('Should fail when max supply exceeded, wlmint again', async () => {
         const {digitalFrogs, users, merkle} = env
-
+        
         const maxSupply = (await digitalFrogs.MAX_SUPPLY()).toNumber()
         for(let i=0; i<maxSupply; i++) {
             const proof =  merkle.getLeafProof(users[i].address)
@@ -80,31 +80,40 @@ describe('DigitalFrogs', () => {
     })
 
     it('Should fail when user0 mint quantity > maxSupply', async () => {
-        const {digitalFrogs, users, deployer} = env
+        const {digitalFrogs, users, deployer, merkle} = env
+
+        const maxSupply = (await digitalFrogs.MAX_SUPPLY()).toNumber()
+        for(let i=0; i<maxSupply; i++) {
+            const proof =  merkle.getLeafProof(users[i].address)
+            await digitalFrogs.connect(users[i]).wlMint(proof)
+        }
+
         const user = users[0]
-        const mintPrice = await digitalFrogs.MINT_PRICE()
-        const maxSupply = (await digitalFrogs.MAX_SUPPLY()).toNumber();
+        const mintPrice = await digitalFrogs.getActualMintPrice(1)
 
         await digitalFrogs.connect(deployer).setPublicSaleOn(true)
-        await expect(digitalFrogs.connect(user).mint(maxSupply + 1, {value: mintPrice.mul(maxSupply)})).rejectedWith(DF_MAX_SUPPLY_EXCEEDED)
+        await expect(digitalFrogs.connect(user).mint(1, {value: mintPrice})).rejectedWith(DF_MAX_SUPPLY_EXCEEDED)
     })
 
-    it('withdraw to deployer when user0 mint quantity 1', async () => {
-        const {digitalFrogs, users, deployer} = env
-        const user = users[0]
-        const mintPrice = await digitalFrogs.MINT_PRICE()
-
-        const prevBalance = await ethers.provider.getBalance(deployer.address)
+    it('Should fail when user0 mint 3, user2 mint 2, user0 mint 1', async () => {
+        const {digitalFrogs, users, merkle, deployer} = env
 
         await digitalFrogs.connect(deployer).setPublicSaleOn(true)
-        await digitalFrogs.connect(user).mint(1, {value: mintPrice})
-        await digitalFrogs.connect(deployer).withdraw()
-        expect(prevBalance).to.be.lt(await ethers.provider.getBalance(deployer.address))
-
+        
+        await digitalFrogs.connect(users[0]).mint(3, {value: await digitalFrogs.getActualMintPrice(3)})
+        await digitalFrogs.connect(users[1]).mint(2, {value: await digitalFrogs.getActualMintPrice(2)})
+        await expect(digitalFrogs.connect(users[2]).mint(1, {value: await digitalFrogs.getActualMintPrice(1)})).rejectedWith(DF_MAX_SUPPLY_EXCEEDED)
     })
 
+    it('Should fail when user0 mint 4', async () => {
+        const {digitalFrogs, users, deployer} = env
+
+        await digitalFrogs.connect(deployer).setPublicSaleOn(true)
+        
+        await expect(digitalFrogs.connect(users[0]).mint(4, {value: await digitalFrogs.getActualMintPrice(4)})).rejectedWith(DF_MINT_QUANTITY_EXCEEDED)
+    })
     
-    it('Should nft integral when user0 mint quantity 2', async () => {
+    it('Should nft power when user0 mint quantity 2', async () => {
         const {digitalFrogs, users, deployer} = env
        
         const user = users[0]
@@ -118,8 +127,8 @@ describe('DigitalFrogs', () => {
 
         for(let i=0; i<indexs; i++) {
             const tokenId = await digitalFrogs.tokenOfOwnerByIndex(user.address, i)
-            const integral = await digitalFrogs.getIntegralByTokenId(tokenId)
-            expect(integral).to.gt(0)
+            const power = await digitalFrogs.getPowerByTokenId(tokenId)
+            expect(power).to.gt(0)
         }
     })
 
@@ -138,25 +147,59 @@ describe('DigitalFrogs', () => {
         expect(tokenURI).to.be.equal(await digitalFrogs.tokenURI(tokenId))
     })
 
-    it('Set mint price', async () => {
+    it('Set power range', async () => {
         const {digitalFrogs, deployer} = env
 
-        const mintPrice = ethers.utils.parseEther("50")
+        const minPower = 1
+        const maxPower = 10
 
-        await digitalFrogs.connect(deployer).setMintPrice(mintPrice)
-        expect(mintPrice).to.be.equal(await digitalFrogs.MINT_PRICE())
-
+        await digitalFrogs.connect(deployer).setPowerRange(minPower, maxPower)
+        expect(minPower).to.be.equal(await digitalFrogs.MIN_POWER())
+        expect(maxPower).to.be.equal(await digitalFrogs.MAX_POWER())
     })
 
-    it('Set integral range', async () => {
-        const {digitalFrogs, deployer} = env
+    it('Mint price idempotent once when user0 mint quantity 3', async () => {
+        const {digitalFrogs, users, deployer} = env
+       
+        const user = users[0]
+        const quantity = 3
+        
+        await digitalFrogs.connect(deployer).setPublicSaleOn(true)
 
-        const minIntegral = 1
-        const maxIntegral = 10
+        const mintPrice = await digitalFrogs.getActualMintPrice(quantity)
 
-        await digitalFrogs.connect(deployer).setIntegralRange(minIntegral, maxIntegral)
-        expect(minIntegral).to.be.equal(await digitalFrogs.MIN_INTEGRAL())
-        expect(maxIntegral).to.be.equal(await digitalFrogs.MAX_INTEGRAL())
+        expect(ethers.utils.parseEther("30.1")).to.be.equal(mintPrice)
+
+        await digitalFrogs.connect(user).mint(quantity, {value: mintPrice})
+
+        expect(ethers.utils.parseEther("10.1")).to.be.equal(await digitalFrogs.MINT_PRICE())
+    })
+
+    it('Mint price idempotent twice when wlmint mint 4, user0 mint 1', async () => {
+        const {digitalFrogs, users, merkle, deployer} = env
+
+        await digitalFrogs.connect(deployer).setPublicSaleOn(true)
+        
+        for(let i=0; i<4; i++) {
+            const proof =  merkle.getLeafProof(users[i].address)
+            await digitalFrogs.connect(users[i]).wlMint(proof)
+        }
+
+        const user = users[0]
+        await digitalFrogs.connect(user).mint(1, {value: await digitalFrogs.getActualMintPrice(1)})
+
+        const mintPrice = await digitalFrogs.getActualMintPrice(1)
+        expect(ethers.utils.parseEther("10.201")).to.be.equal(mintPrice)
+    })
+
+    it('User0 remaining mint quantity 2 when user0 mint 1', async () => {
+        const {digitalFrogs, users, deployer} = env
+
+        await digitalFrogs.connect(deployer).setPublicSaleOn(true)
+        
+        await digitalFrogs.connect(users[0]).mint(1, {value: await digitalFrogs.getActualMintPrice(1)})
+
+        expect(2).to.be.equal(await digitalFrogs.getActualMintQuantity(users[0].address))
     })
     
 });

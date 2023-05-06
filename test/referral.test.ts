@@ -17,11 +17,11 @@ describe('DigitalFrogs', () => {
         expect(await referral.getAddrByReferralCode(referralCode)).to.be.equal(user.address)
     })
 
-    it('Shound fail when user0 register referral code 99999', async () => {
+    it('Shound fail when user0 register referral code 999', async () => {
         const {referral, users} = env
         const user = users[0]
 
-        const referralCode = 99999
+        const referralCode = 999
 
         await expect(referral.connect(user).registerReferralCode(referralCode)).rejectedWith(RS_REFERRAL_CODE_MUST_BE_IN_THE_RANGE)
     })

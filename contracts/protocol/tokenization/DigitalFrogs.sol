@@ -13,44 +13,51 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
     using FilAddress for address;
     using PercentageMath for uint256;
 
-    uint256 public MAX_SUPPLY;
+    string public BASE_URI;
 
-    uint256 public MINT_PRICE = 10 ether;
+    uint256 public MINT_PRICE;
 
-    uint256 public PUBLIC_MINT_UPPER_LIMIT;
+    uint256 public immutable MAX_SUPPLY;
+
+    uint256 public immutable PUBLIC_MINT_UPPER_LIMIT;
+
+    // Every time the NFT supply increases by INCREASE_INTERVAL, the mint price will be idempotent by a percentage
+    uint256 public immutable INCREASE_PERCENTAGE;
+
+    uint256 public immutable INCREASE_INTERVAL;
 
     bool public PUBLIC_SALE_ON = false;
 
-    uint256 public MIN_INTEGRAL = 500;
+    uint256 public MIN_POWER = 100;
 
-    uint256 public MAX_INTEGRAL = 1000;
-
-    // Every time the number of NFT mint increases by 100, the price will increase by a percentage
-    uint256 public PRICE_INCREASE_PERCENTAGE = 0;
-
-    string internal baseURI;
+    uint256 public MAX_POWER = 1000;
 
     Whitelist internal _whitelist;
     
+    // Mapping from address to wl mint state
     mapping(address => bool) internal _wlAddrsMint;
 
-    mapping(uint256 => uint256) internal _tokenIdsIntegral;
+    // Mapping from address to mint quantity(Up to 3)
+    mapping(address => uint256) internal _addrsMint;
+
+    // Mapping from tokenId to power
+    mapping(uint256 => uint256) internal _tokenIdsPower;
 
     // The address of the stFIL protocol pool, which discloses the risk reserve of mint funds directly entering the pool
-    address internal _stFILPool;
+    address public STFIL_POOL;
 
     address public constant STFIL_POOL_RISK_RESERVE = 0xff00000000000000000000000000000000000063;
 
-    constructor(string memory name, string memory symbol, uint256 maxSupply, uint256 publicMintUpperLimit, uint256 priceIncreasePercentage, address stFILPool, Whitelist whitelist) ERC721(name, symbol) {
-        require(publicMintUpperLimit <= maxSupply, Errors.DF_MAX_SUPPLY_EXCEEDED);
+    constructor(string memory name, string memory symbol, string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, uint256 increasePercentage, uint256 increaseInterval, address stFILPool, Whitelist whitelist) ERC721(name, symbol) {
+        BASE_URI = baseURI;
+        MINT_PRICE = mintPrice;
         MAX_SUPPLY = maxSupply;
         PUBLIC_MINT_UPPER_LIMIT = publicMintUpperLimit;
-
-        require(priceIncreasePercentage >= 0 && priceIncreasePercentage <= PercentageMath.PERCENTAGE_FACTOR, Errors.DF_WRONG_PERCENTAGE_RANGE);
-        PRICE_INCREASE_PERCENTAGE = priceIncreasePercentage;
+        INCREASE_PERCENTAGE = increasePercentage;
+        INCREASE_INTERVAL = increaseInterval;
 
         require(stFILPool != address(0), Errors.DF_INVALID_POOL_ADDRESS);
-        _stFILPool = stFILPool;
+        STFIL_POOL = stFILPool;
 
         _whitelist = whitelist;
     }
@@ -67,9 +74,12 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
         require(totalSupply() + 1 <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
         require(_whitelist.verify(proof, keccak256(abi.encodePacked(msg.sender))), Errors.DF_MUST_BE_WHITELISTED);
 
+        (, uint256 newMintPrice) = _getActualMintPrice(1);
+        MINT_PRICE = newMintPrice;
+
         uint256 tokenId = totalSupply();
         _safeMint(sender, tokenId);
-        _tokenIdsIntegral[tokenId] = _random(tokenId);
+        _tokenIdsPower[tokenId] = _random(tokenId);
         _wlAddrsMint[sender] = true;
     }
 
@@ -82,94 +92,97 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
 
         require(sender != address(0), Errors.DF_INVALID_ADDRESS);
         require(PUBLIC_SALE_ON, Errors.DF_PUBLIC_SALE_NOT_OPEN);
+        require(_addrsMint[sender] + quantity <= 3, Errors.DF_MINT_QUANTITY_EXCEEDED);
         require(totalSupply() + quantity <= PUBLIC_MINT_UPPER_LIMIT, Errors.DF_MAX_SUPPLY_EXCEEDED);
-        require(msg.value == _calcPrice(quantity), Errors.DF_MINT_PRICE_ERROR);
+
+        (uint256 totalPrice, uint256 newMintPrice) = _getActualMintPrice(quantity);
+        require(msg.value == totalPrice, Errors.DF_MINT_PRICE_ERROR);
+
+        MINT_PRICE = newMintPrice;
 
         for(uint i = 0; i < quantity; i++) {
             uint256 tokenId = totalSupply();
             _safeMint(sender, tokenId);
-            _tokenIdsIntegral[tokenId] = _random(tokenId);
+            _tokenIdsPower[tokenId] = _random(tokenId);
         }
 
+        _addrsMint[sender] += quantity;
+
         // Increase stFIL pool risk reserve
-        bytes memory payload = abi.encodeWithSignature("stake(address onBehalfOf, uint32 referralCode)", STFIL_POOL_RISK_RESERVE, 0);
-        (bool success, ) = _stFILPool.call{value: msg.value}(payload);
+        bytes memory payload = abi.encodeWithSignature("stake(address,uint32)", STFIL_POOL_RISK_RESERVE, 0);
+        (bool success, ) = STFIL_POOL.call{value: msg.value}(payload);
         require(success, Errors.DF_STFIL_POOL_CALL_FAILED);
 
     } 
 
     /**
-     * @dev Obtain the corresponding points according to the tokenId of the NFT
+     * @dev Get the power points according to the tokenId of the NFT
      **/
-    function getIntegralByTokenId(uint256 tokenId) external view returns(uint256) {
-        return _tokenIdsIntegral[tokenId];
+    function getPowerByTokenId(uint256 tokenId) external view returns(uint256) {
+        return _tokenIdsPower[tokenId];
     }
 
     /**
-     * @dev Withdraw the amount in the contract to the administrator
+     * @dev Get the actual mint price according to the mint quantity
      **/
-    function withdraw() external onlyOwner {
-        uint256 balance = address(this).balance;
-        payable(msg.sender).transfer(balance);
+    function getActualMintPrice(uint256 quantity) external view returns(uint256) { 
+        (uint256 totalPrice, ) = _getActualMintPrice(quantity);
+        return totalPrice;
+    }
+
+    /**
+     * @dev Get the actual mint quantity of the owner address
+     **/
+    function getActualMintQuantity(address owner) external view returns(uint256) { 
+        uint256 quantity = 3 - _addrsMint[owner.normalize()];
+
+        return MAX_SUPPLY - totalSupply() > quantity ? quantity : MAX_SUPPLY - totalSupply();
     }
 
     /**
      * @dev Set the base URI address
-     * @param baseURI_ The current base URI
      **/
-    function setBaseURI(string memory baseURI_) external onlyOwner {
-        baseURI = baseURI_;
-    }
-
-    /**
-     * @dev Set mint price
-     * @param price The current price
-     **/
-    function setMintPrice(uint256 price) external onlyOwner {
-        MINT_PRICE = price;
+    function setBaseURI(string memory baseURI) external onlyOwner {
+        BASE_URI = baseURI;
     }
 
     /**
      * @dev Switch settings for public sale
-     * @param state 'true' is enabled, otherwise
      **/
     function setPublicSaleOn(bool state) external onlyOwner {
         PUBLIC_SALE_ON = state;
     }
 
     /**
-     * @dev Set the integration range
-     * @param min The minimum value of the integral
-     * @param max The maximum value of the integral
+     * @dev Set the random power range
      **/
-    function setIntegralRange(uint256 min, uint256 max) external onlyOwner {
-        MIN_INTEGRAL = min;
-        MAX_INTEGRAL = max;
-    }
-
-    /**
-     * @dev Returns the address of the staking pool where this stFIL
-     **/
-    function STFIL_POOL() external view returns (address) {
-        return _stFILPool;
+    function setPowerRange(uint256 min, uint256 max) external onlyOwner {
+        MIN_POWER = min;
+        MAX_POWER = max;
     }
 
     function _baseURI() internal view override returns (string memory) {
-        return baseURI;
+        return BASE_URI;
     }
 
     function _random(uint256 tokenId) internal view returns (uint256) {
         uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), msg.sender, block.timestamp, tokenId)));
-        uint256 val = rand % MAX_INTEGRAL;
-        return val < MIN_INTEGRAL ? val + MIN_INTEGRAL : val;
+        uint256 val = rand % MAX_POWER;
+        return val < MIN_POWER ? val + MIN_POWER : val;
     }
 
-    function _calcPrice(uint256 quantity) internal view returns(uint256) {
+    function _getActualMintPrice(uint256 quantity) internal view returns(uint256, uint256) { 
         uint256 totalPrice = 0;
-        for(uint256 i=0; i<quantity; i++) {
-            uint256 n = (totalSupply() + i) / 100;
-            totalPrice += MINT_PRICE.percentMul((PercentageMath.PERCENTAGE_FACTOR + PRICE_INCREASE_PERCENTAGE)**n);
+        uint256 mintPrice = MINT_PRICE;
+        for (uint256 i = 0; i < quantity; i++) {
+            uint256 n = totalSupply() + i;
+            if (n != 0 && n % INCREASE_INTERVAL == 0) {
+                mintPrice = mintPrice.percentMul(PercentageMath.PERCENTAGE_FACTOR + INCREASE_PERCENTAGE);
+            }
+            totalPrice += mintPrice;
         }
-        return totalPrice;
+        
+        return (totalPrice, mintPrice);
     }
+
 }
