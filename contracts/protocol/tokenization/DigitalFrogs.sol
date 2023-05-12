@@ -96,7 +96,7 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
         require(totalSupply() + quantity <= PUBLIC_MINT_UPPER_LIMIT, Errors.DF_MAX_SUPPLY_EXCEEDED);
 
         (uint256 totalPrice, uint256 newMintPrice) = _getActualMintPrice(quantity);
-        require(msg.value == totalPrice, Errors.DF_MINT_PRICE_ERROR);
+        require(msg.value >= totalPrice, Errors.DF_MINT_PRICE_ERROR);
 
         MINT_PRICE = newMintPrice;
 
@@ -157,6 +157,8 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
      * @dev Set the random power range
      **/
     function setPowerRange(uint256 min, uint256 max) external onlyOwner {
+        require(min < max, Errors.DF_MAX_POWER_MORE_MIN_POWER);
+
         MIN_POWER = min;
         MAX_POWER = max;
     }
