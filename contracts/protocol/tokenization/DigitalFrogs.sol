@@ -157,7 +157,7 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
      * @dev Set the random power range
      **/
     function setPowerRange(uint256 min, uint256 max) external onlyOwner {
-        require(min < max, Errors.DF_MAX_POWER_MORE_MIN_POWER);
+        require(min <= max / 2, Errors.DF_MIN_POWER_MORE_HALF_MAX_POWER);
 
         MIN_POWER = min;
         MAX_POWER = max;

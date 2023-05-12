@@ -25,7 +25,7 @@ library Errors {
   string public constant DF_INVALID_POOL_ADDRESS = '58';
   string public constant DF_STFIL_POOL_CALL_FAILED = '59';
   string public constant DF_WRONG_PERCENTAGE_RANGE = '60';
-  string public constant DF_MAX_POWER_MORE_MIN_POWER = '61';
+  string public constant DF_MIN_POWER_MORE_HALF_MAX_POWER = '61';
 
   string public constant RS_INVALID_ADDRESS = '62';
   string public constant RS_REFERRAL_CODE_MUST_BE_IN_THE_RANGE = '63';
