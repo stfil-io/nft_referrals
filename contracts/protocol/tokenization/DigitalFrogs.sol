@@ -140,6 +140,13 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
     }
 
     /**
+     * @dev Get whitelist mint status
+     **/
+    function getWlMintState(address owner) external view returns(bool) { 
+        return _wlAddrsMint[owner.normalize()];
+    }
+
+    /**
      * @dev Set the base URI address
      **/
     function setBaseURI(string memory baseURI) external onlyOwner {
