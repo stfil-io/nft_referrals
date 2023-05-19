@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {Environment, initializeEnv} from "./helpers/environment";
 import { RS_REFERRAL_CODE_ALREADY_EXIST, RS_REFERRAL_CODE_MUST_BE_IN_THE_RANGE, RS_REFERRAL_CODE_NUM_LIMITED } from '../common/Errors';
 
-describe('DigitalFrogs', () => {
+describe('StableJumper', () => {
     let env: Environment
     beforeEach(async () => {
         env = await initializeEnv();

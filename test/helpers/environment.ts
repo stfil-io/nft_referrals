@@ -3,14 +3,14 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 import {
     Whitelist,
-    DigitalFrogs,
+    StableJumper,
     ReferralStorage
 } from "../../typechain-types";
 import { Merkle } from "../../common/merkle";
 
 export interface Environment {
     whitelist: Whitelist;
-    digitalFrogs: DigitalFrogs;
+    stableJumper: StableJumper;
     referral: ReferralStorage;
     merkle: Merkle;
     deployer: SignerWithAddress;
@@ -19,7 +19,7 @@ export interface Environment {
 
 const testEnv: Environment = {
     whitelist: {} as Whitelist,
-    digitalFrogs: {} as DigitalFrogs,
+    stableJumper: {} as StableJumper,
     referral: {} as ReferralStorage,
     merkle: {} as Merkle,
     deployer: {} as SignerWithAddress,
@@ -34,15 +34,15 @@ export const deployWhitelist = async () => {
     return <Whitelist>WhitelistAddress
 }
 
-export const deployDigitalFrogs = async () => {
+export const deployStableJumper = async () => {
     const STFILPool = await ethers.getContractFactory("StakingPool")
     const STFILPoolAddress = await STFILPool.deploy()
     await STFILPoolAddress.deployed()
 
-    const DigitalFrogs = await ethers.getContractFactory("DigitalFrogs")
+    const StableJumper = await ethers.getContractFactory("StableJumper")
 
-    const name = "DigitalFrogs"
-    const symbol = "DigitalFrogs"
+    const name = "StableJumper"
+    const symbol = "StableJumper"
     const baseURI = ""
     const mintPrice = ethers.utils.parseEther("10") 
     const maxSupply = 10 
@@ -51,10 +51,10 @@ export const deployDigitalFrogs = async () => {
     const increaseInterval = 2 
     const stFILPool = STFILPoolAddress.address 
     const whitelist = testEnv.whitelist.address
-    const DigitalFrogsAddress = await DigitalFrogs.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, increasePercentage, increaseInterval, stFILPool, whitelist)
-    await DigitalFrogsAddress.deployed()
+    const StableJumperAddress = await StableJumper.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, increasePercentage, increaseInterval, stFILPool, whitelist)
+    await StableJumperAddress.deployed()
 
-    return <DigitalFrogs>DigitalFrogsAddress
+    return <StableJumper>StableJumperAddress
 }
 
 export const deployReferralStorage = async () => {
@@ -77,7 +77,7 @@ export async function initializeEnv(): Promise<Environment> {
 
     testEnv.deployer = _deployer
 
-    testEnv.digitalFrogs = await deployDigitalFrogs()
+    testEnv.stableJumper = await deployStableJumper()
 
     testEnv.referral = await deployReferralStorage()
    

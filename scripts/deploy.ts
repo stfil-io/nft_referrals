@@ -12,7 +12,7 @@ async function main() {
     const scripts = [
         '0_setup_deployments.ts',
         '1_deploy_whitelist.ts',
-        '2_deploy_digital_frogs.ts',
+        '2_deploy_stable_jumper.ts',
         '3_deploy_referral.ts',
     ]
 

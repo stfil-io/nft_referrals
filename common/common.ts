@@ -4,7 +4,7 @@ import {createInterface} from 'readline'
 
 export interface IDeployments {
     whitelist: string;
-    digitalFrogs: string;
+    stableJumper: string;
     referral: string;
 }
 

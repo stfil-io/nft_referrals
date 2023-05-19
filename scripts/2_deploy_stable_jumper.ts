@@ -1,7 +1,7 @@
 import {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
-import {DigitalFrogs} from "../typechain-types";
+import {StableJumper} from "../typechain-types";
 import { useEnv } from "../common/env";
 
 async function main() {
@@ -9,15 +9,15 @@ async function main() {
 
     const deploymentFilename = getDeploymentFilename(network.name)
     const deployments = <IDeployments>getDeploymentFile(deploymentFilename)
-    if (deployments.digitalFrogs != '') {
-        console.log(`Skipped DigitalFrogs`)
+    if (deployments.stableJumper != '') {
+        console.log(`Skipped StableJumper`)
         return
     }
 
-    console.log(`Deploying DigitalFrogs`)
+    console.log(`Deploying StableJumper`)
     
-    const name = "DigitalFrogs"
-    const symbol = "DigitalFrogs"
+    const name = "StableJumper"
+    const symbol = "StableJumper"
     const baseURI =  useEnv("BASE_URI")
     if (baseURI == '') {
         console.error('Please set the "BASE_URI" environment variable')
@@ -35,15 +35,15 @@ async function main() {
     }
     const whitelist = deployments.whitelist
 
-    const DigitalFrogsContract = await ethers.getContractFactory("DigitalFrogs")
-    const DigitalFrogsAddress = <DigitalFrogs>await DigitalFrogsContract.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, increasePercentage, increaseInterval, stFILPool, whitelist)
-    await DigitalFrogsAddress.deployed()
-    deployments.digitalFrogs = DigitalFrogsAddress.address
+    const StableJumperContract = await ethers.getContractFactory("StableJumper")
+    const StableJumperAddress = <StableJumper>await StableJumperContract.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, increasePercentage, increaseInterval, stFILPool, whitelist)
+    await StableJumperAddress.deployed()
+    deployments.stableJumper = StableJumperAddress.address
 
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))
 
     console.log(`Deployed to ${network.name} (${network.config.chainId})
-    DigitalFrogs:  ${DigitalFrogsAddress.address}
+    StableJumper:  ${StableJumperAddress.address}
     Deployment file: ${deploymentFilename}`)
 }
 

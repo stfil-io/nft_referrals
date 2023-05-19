@@ -9,7 +9,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {FilAddress} from '../libraries/utils/FilAddress.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
-contract DigitalFrogs is ERC721Enumerable, Ownable {
+contract StableJumper is ERC721Enumerable, Ownable {
     using FilAddress for address;
     using PercentageMath for uint256;
 
@@ -56,7 +56,7 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
         INCREASE_PERCENTAGE = increasePercentage;
         INCREASE_INTERVAL = increaseInterval;
 
-        require(stFILPool != address(0), Errors.DF_INVALID_POOL_ADDRESS);
+        require(stFILPool != address(0), Errors.SJ_INVALID_POOL_ADDRESS);
         STFIL_POOL = stFILPool;
 
         _whitelist = whitelist;
@@ -69,10 +69,10 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
     function wlMint(bytes32[] memory proof) external payable {
         address sender = msg.sender.normalize();
 
-        require(sender != address(0), Errors.DF_INVALID_ADDRESS);
-        require(!_wlAddrsMint[sender], Errors.DF_ALREADY_MINT);
-        require(totalSupply() + 1 <= MAX_SUPPLY, Errors.DF_MAX_SUPPLY_EXCEEDED);
-        require(_whitelist.verify(proof, keccak256(abi.encodePacked(msg.sender))), Errors.DF_MUST_BE_WHITELISTED);
+        require(sender != address(0), Errors.SJ_INVALID_ADDRESS);
+        require(!_wlAddrsMint[sender], Errors.SJ_ALREADY_MINT);
+        require(totalSupply() + 1 <= MAX_SUPPLY, Errors.SJ_MAX_SUPPLY_EXCEEDED);
+        require(_whitelist.verify(proof, keccak256(abi.encodePacked(msg.sender))), Errors.SJ_MUST_BE_WHITELISTED);
 
         (, uint256 newMintPrice) = _getActualMintPrice(1);
         MINT_PRICE = newMintPrice;
@@ -90,13 +90,13 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
     function mint(uint256 quantity) external payable {
         address sender = msg.sender.normalize();
 
-        require(sender != address(0), Errors.DF_INVALID_ADDRESS);
-        require(PUBLIC_SALE_ON, Errors.DF_PUBLIC_SALE_NOT_OPEN);
-        require(_addrsMint[sender] + quantity <= 3, Errors.DF_MINT_QUANTITY_EXCEEDED);
-        require(totalSupply() + quantity <= PUBLIC_MINT_UPPER_LIMIT, Errors.DF_MAX_SUPPLY_EXCEEDED);
+        require(sender != address(0), Errors.SJ_INVALID_ADDRESS);
+        require(PUBLIC_SALE_ON, Errors.SJ_PUBLIC_SALE_NOT_OPEN);
+        require(_addrsMint[sender] + quantity <= 3, Errors.SJ_MINT_QUANTITY_EXCEEDED);
+        require(totalSupply() + quantity <= PUBLIC_MINT_UPPER_LIMIT, Errors.SJ_MAX_SUPPLY_EXCEEDED);
 
         (uint256 totalPrice, uint256 newMintPrice) = _getActualMintPrice(quantity);
-        require(msg.value >= totalPrice, Errors.DF_MINT_PRICE_ERROR);
+        require(msg.value >= totalPrice, Errors.SJ_MINT_PRICE_ERROR);
 
         MINT_PRICE = newMintPrice;
 
@@ -111,7 +111,7 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
         // Increase stFIL pool risk reserve
         bytes memory payload = abi.encodeWithSignature("stake(address,uint32)", STFIL_POOL_RISK_RESERVE, 0);
         (bool success, ) = STFIL_POOL.call{value: msg.value}(payload);
-        require(success, Errors.DF_STFIL_POOL_CALL_FAILED);
+        require(success, Errors.SJ_STFIL_POOL_CALL_FAILED);
 
     } 
 
@@ -164,7 +164,7 @@ contract DigitalFrogs is ERC721Enumerable, Ownable {
      * @dev Set the random power range
      **/
     function setPowerRange(uint256 min, uint256 max) external onlyOwner {
-        require(min <= max / 2, Errors.DF_MIN_POWER_MORE_HALF_MAX_POWER);
+        require(min <= max / 2, Errors.SJ_MIN_POWER_MORE_HALF_MAX_POWER);
 
         MIN_POWER = min;
         MAX_POWER = max;

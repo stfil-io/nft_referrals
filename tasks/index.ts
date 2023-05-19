@@ -1,2 +1,2 @@
-import './digitalFrogs/setPublicSaleOn'
+import './stablejumper/setPublicSaleOn'
 import './whitelist/setRoot'

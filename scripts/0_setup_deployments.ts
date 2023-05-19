@@ -10,7 +10,7 @@ async function main() {
     const deploymentFilename = getDeploymentFilename(network.name)
     const deployments: IDeployments = {
         whitelist: '',
-        digitalFrogs: '',
+        stableJumper: '',
         referral: '',
     }
 
