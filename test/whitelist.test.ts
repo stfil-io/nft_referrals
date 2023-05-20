@@ -50,4 +50,18 @@ describe('Whitelist', () => {
         const {proof, leaf} =  merkle.getLeafProofAndLeaf(deployer.address)
         expect(true).to.be.equal(await whitelist.verify(proof, leaf))
     })
+
+    it('Should like merkleroot when whitelist inconsistent order', async () => {
+        const whitelistAddresses1 = [
+            "0x9afa3feBDc382a94493a85103d763d09B5112aBC",
+            "0x4c462E41b8027b1eC348aC0318a43bF68c41EFfE"
+        ]
+        const whitelistAddresses2 = [
+            "0x4c462E41b8027b1eC348aC0318a43bF68c41EFfE",
+            "0x9afa3feBDc382a94493a85103d763d09B5112aBC"
+        ]
+        const merkle1 = new Merkle(whitelistAddresses1)
+        const merkle2 = new Merkle(whitelistAddresses2)
+        expect(merkle1.getHexRoot()).to.be.equal(merkle2.getHexRoot())
+    })
 });

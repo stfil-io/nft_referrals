@@ -13,6 +13,10 @@ export class Merkle {
         return this.merkleTree.getRoot()
     }
 
+    getHexRoot(): string {
+        return this.merkleTree.getHexRoot()
+    }
+
     getLeafProof(addr: string) {
         const leaf = keccak256(addr)
         const proof = this.merkleTree.getHexProof(leaf)
