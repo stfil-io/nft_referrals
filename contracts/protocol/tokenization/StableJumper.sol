@@ -1,6 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+/* ----------------------------------------------------------------------------
+* ,---.   ,--.          ,--.   ,--.            ,--.                                           ,--.  ,--.,------.,--------.
+*'   .-',-'  '-. ,--,--.|  |-. |  | ,---.      |  |,--.,--.,--,--,--. ,---.  ,---. ,--.--.    |  ,'.|  ||  .---''--.  .--',---.
+*`.  `-.'-.  .-'' ,-.  || .-. '|  || .-. :,--. |  ||  ||  ||        || .-. || .-. :|  .--'    |  |' '  ||  `--,    |  |  (  .-'
+*.-'    | |  |  \ '-'  || `-' ||  |\   --.|  '-'  /'  ''  '|  |  |  || '-' '\   --.|  |       |  | `   ||  |`      |  |  .-'  `)
+*`-----'  `--'   `--`--' `---' `--' `----' `-----'  `----' `--`--`--'|  |-'  `----'`--'       `--'  `--'`--'       `--'  `----'                                                                     `--'
+* Brave Leaps in the Journey of Stability!
+/ -------------------------------------------------------------------------- */
+
 import '../../dependencies/openzeppelin/contracts/access/Ownable.sol';
 import {ERC721} from '../../dependencies/openzeppelin/contracts/token/ERC721/ERC721.sol';
 import {ERC721Enumerable} from '../../dependencies/openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
@@ -9,6 +18,10 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {FilAddress} from '../libraries/utils/FilAddress.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
+/**
+ * @title StableJumper NFT miniting
+ * @author STFIL
+ **/
 contract StableJumper is ERC721Enumerable, Ownable {
     using FilAddress for address;
     using PercentageMath for uint256;
