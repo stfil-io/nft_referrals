@@ -2,9 +2,9 @@ import {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
 import {Whitelist} from "../typechain-types";
-import { useEnv } from "../common/env";
+import {useEnv} from "../common/env";
 import fs from 'fs'
-import { Merkle } from "../common/merkle";
+import {Merkle} from "../common/merkle";
 
 async function main() {
     await isTargetNetwork(network)
@@ -20,10 +20,10 @@ async function main() {
 
     const whitelistJSONPath = useEnv("WHITELIST_JSON_PATH");
     if (whitelistJSONPath == '') {
-        console.error('Please set the "WHITELIST_JSON_PATH" environment variable')
+        console.log('Please set the "WHITELIST_JSON_PATH" environment variable')
         return;
     }
-    
+
     const whitelist = await JSON.parse(fs.readFileSync(whitelistJSONPath, 'utf8'))
     const merkle = new Merkle(whitelist)
 

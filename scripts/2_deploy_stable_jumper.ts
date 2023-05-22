@@ -2,7 +2,7 @@ import {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
 import {StableJumper} from "../typechain-types";
-import { useEnv } from "../common/env";
+import {useEnv} from "../common/env";
 
 async function main() {
     await isTargetNetwork(network)
@@ -15,22 +15,22 @@ async function main() {
     }
 
     console.log(`Deploying StableJumper`)
-    
+
     const name = "StableJumper"
     const symbol = "StableJumper"
-    const baseURI =  useEnv("BASE_URI")
+    const baseURI = useEnv("BASE_URI")
     if (baseURI == '') {
-        console.error('Please set the "BASE_URI" environment variable')
+        console.log('Please set the "BASE_URI" environment variable')
         return;
     }
-    const mintPrice = ethers.utils.parseEther("10") 
-    const maxSupply = 10000 
-    const publicMintUpperLimit = 5000 
-    const increasePercentage = 100 
-    const increaseInterval = 100 
+    const mintPrice = ethers.utils.parseEther("10")
+    const maxSupply = 10000
+    const publicMintUpperLimit = 5000
+    const increasePercentage = 100
+    const increaseInterval = 100
     const stFILPool = useEnv("STFIL_POOL")
     if (stFILPool == '') {
-        console.error('Please set the "STFIL_POOL" environment variable')
+        console.log('Please set the "STFIL_POOL" environment variable')
         return;
     }
     const whitelist = deployments.whitelist
@@ -48,6 +48,6 @@ async function main() {
 }
 
 main().catch((error) => {
-    console.error(error)
+    console.log(error)
     process.exitCode = 1
 })
