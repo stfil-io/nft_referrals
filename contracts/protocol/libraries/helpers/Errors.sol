@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 /**
  * @title Errors library
- * @author FrogHub
+ * @author STFIL
  * @notice Defines the error messages emitted by the different contracts of the NFT protocol
  * @dev Error messages prefix glossary:
  *  - WL = Whitelist
