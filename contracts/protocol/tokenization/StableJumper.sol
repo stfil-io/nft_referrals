@@ -37,6 +37,8 @@ contract StableJumper is ERC721Enumerable, Ownable {
     bool public PUBLIC_SALE_ON = false;
 
     Whitelist internal _whitelist;
+
+    uint256 internal _totalPower;
     
     // Mapping from address to wl mint state
     mapping(address => bool) internal _wlAddrsMint;
@@ -97,6 +99,7 @@ contract StableJumper is ERC721Enumerable, Ownable {
             uint256 tokenId = totalSupply();
             _safeMint(sender, tokenId);
             _tokenIdsPower[tokenId] = _random(tokenId);
+            _totalPower += _tokenIdsPower[tokenId];
             tokenIds[i] = tokenId;
         }
 
@@ -125,6 +128,7 @@ contract StableJumper is ERC721Enumerable, Ownable {
         uint256 tokenId = totalSupply();
         _safeMint(sender, tokenId);
         _tokenIdsPower[tokenId] = _random(tokenId);
+        _totalPower += _tokenIdsPower[tokenId];
         _wlAddrsMint[sender] = true;
 
         uint256[] memory tokenIds = new uint256[](1);
@@ -148,12 +152,20 @@ contract StableJumper is ERC721Enumerable, Ownable {
         uint256 tokenId = totalSupply();
         _safeMint(sender, tokenId);
         _tokenIdsPower[tokenId] = _highRandom(tokenId);
+        _totalPower += _tokenIdsPower[tokenId];
         _highWlAddrsMint[sender] = true;
 
         uint256[] memory tokenIds = new uint256[](1);
         tokenIds[0] = tokenId;
 
         emit Mint(msg.sender, 2, 1, tokenIds);
+    }
+
+    /**
+     * @dev Get the total power
+     */
+    function totalPower() external view returns (uint256) {
+        return _totalPower;
     }
 
     /**
