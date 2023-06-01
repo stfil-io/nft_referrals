@@ -13,14 +13,23 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 contract Whitelist is Ownable {
   bytes32 public root;
 
+  bytes32 public highRoot;
+
   /**
    * @dev Emitted on setRoot()
    * @param root The new merkle tree root
    **/
   event MerkleRoot(bytes32 root);
 
-  constructor(bytes32 merkleroot) {
+  /**
+   * @dev Emitted on setHighRoot()
+   * @param root The new high merkle tree root
+   **/
+  event HighMerkleRoot(bytes32 root);
+
+  constructor(bytes32 merkleroot, bytes32 highMerkleroot) {
     root = merkleroot;
+    highRoot = highMerkleroot;
   }
 
   /**
@@ -33,6 +42,26 @@ contract Whitelist is Ownable {
   } 
 
   /**
+   * @dev Update the root of the Merkle tree
+   */
+  function setHighRoot(bytes32 highMerkleroot) external onlyOwner {
+    highRoot = highMerkleroot;
+
+    emit HighMerkleRoot(highRoot);
+  } 
+
+  /**
+   * @dev Update the root and high root of the Merkle tree
+   */
+  function setRootAndHighRoot(bytes32 merkleroot, bytes32 highMerkleroot) external onlyOwner {
+    root = merkleroot;
+    highRoot = highMerkleroot;
+
+    emit MerkleRoot(root);
+    emit HighMerkleRoot(highRoot);
+  }
+
+  /**
    * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree
    * defined by `root`. For this, a `proof` must be provided, containing
    * sibling hashes on the branch from the leaf to the root of the tree. Each
@@ -40,5 +69,9 @@ contract Whitelist is Ownable {
    */
   function verify(bytes32[] memory proof, bytes32 leaf) external view returns (bool) {
     return MerkleProof.verify(proof, root, leaf);
+  }
+
+  function highVerify(bytes32[] memory proof, bytes32 leaf) external view returns (bool) {
+    return MerkleProof.verify(proof, highRoot, leaf);
   }
 }

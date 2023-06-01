@@ -26,8 +26,6 @@ async function main() {
     const mintPrice = ethers.utils.parseEther("10")
     const maxSupply = 10000
     const publicMintUpperLimit = 5000
-    const increasePercentage = 100
-    const increaseInterval = 100
     const stFILPool = useEnv("STFIL_POOL")
     if (stFILPool == '') {
         console.log('Please set the "STFIL_POOL" environment variable')
@@ -36,7 +34,7 @@ async function main() {
     const whitelist = deployments.whitelist
 
     const StableJumperContract = await ethers.getContractFactory("StableJumper")
-    const StableJumperAddress = <StableJumper>await StableJumperContract.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, increasePercentage, increaseInterval, stFILPool, whitelist)
+    const StableJumperAddress = <StableJumper>await StableJumperContract.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, stFILPool, whitelist)
     await StableJumperAddress.deployed()
     deployments.stableJumper = StableJumperAddress.address
 

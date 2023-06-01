@@ -7,6 +7,7 @@ type IEnvVars =
     | 'DEPLOYER'
     | 'NETWORK_GATEWAY'
     | 'WHITELIST_JSON_PATH'
+    | 'HIGH_WHITELIST_JSON_PATH'
     | 'BASE_URI'
     | 'STFIL_POOL'
 

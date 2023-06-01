@@ -24,11 +24,20 @@ async function main() {
         return;
     }
 
+    const highWhitelistJSONPath = useEnv("HIGH_WHITELIST_JSON_PATH");
+    if (highWhitelistJSONPath == '') {
+        console.log('Please set the "HIGH_WHITELIST_JSON_PATH" environment variable')
+        return;
+    }
+
     const whitelist = await JSON.parse(fs.readFileSync(whitelistJSONPath, 'utf8'))
     const merkle = new Merkle(whitelist)
 
+    const highWhitelist = await JSON.parse(fs.readFileSync(highWhitelistJSONPath, 'utf8'))
+    const highMerkle = new Merkle(highWhitelist)
+
     const WhitelistContract = await ethers.getContractFactory("Whitelist")
-    const WhitelistAddress = <Whitelist>await WhitelistContract.deploy(merkle.getRoot())
+    const WhitelistAddress = <Whitelist>await WhitelistContract.deploy(merkle.getRoot(), highMerkle.getRoot())
     await WhitelistAddress.deployed()
     deployments.whitelist = WhitelistAddress.address
 

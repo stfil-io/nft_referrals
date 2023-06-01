@@ -147,15 +147,13 @@ describe('StableJumper', () => {
         expect(tokenURI).to.be.equal(await stableJumper.tokenURI(tokenId))
     })
 
-    it('Set power range', async () => {
-        const {stableJumper, deployer} = env
+    it('Set mint price', async () => {
+        const {stableJumper} = env
 
-        const minPower = 1
-        const maxPower = 10
-
-        await stableJumper.connect(deployer).setPowerRange(minPower, maxPower)
-        expect(minPower).to.be.equal(await stableJumper.MIN_POWER())
-        expect(maxPower).to.be.equal(await stableJumper.MAX_POWER())
+        const mintPrice = ethers.utils.parseEther("30")
+        
+        await stableJumper.setMintPrice(mintPrice)
+        expect(mintPrice).to.be.equal(await stableJumper.MINT_PRICE())
     })
 
     it('Mint price idempotent once when user0 mint quantity 3', async () => {
@@ -168,11 +166,11 @@ describe('StableJumper', () => {
 
         const mintPrice = await stableJumper.getActualMintPrice(quantity)
 
-        expect(ethers.utils.parseEther("30.1")).to.be.equal(mintPrice)
+        expect(ethers.utils.parseEther("30")).to.be.equal(mintPrice)
 
         await stableJumper.connect(user).mint(quantity, {value: mintPrice})
 
-        expect(ethers.utils.parseEther("10.1")).to.be.equal(await stableJumper.MINT_PRICE())
+        expect(ethers.utils.parseEther("10")).to.be.equal(await stableJumper.MINT_PRICE())
     })
 
     it('Mint price idempotent twice when wlmint mint 4, user0 mint 1', async () => {
@@ -189,7 +187,7 @@ describe('StableJumper', () => {
         await stableJumper.connect(user).mint(1, {value: await stableJumper.getActualMintPrice(1)})
 
         const mintPrice = await stableJumper.getActualMintPrice(1)
-        expect(ethers.utils.parseEther("10.201")).to.be.equal(mintPrice)
+        expect(ethers.utils.parseEther("10")).to.be.equal(mintPrice)
     })
 
     it('User0 remaining mint quantity 2 when user0 mint 1', async () => {

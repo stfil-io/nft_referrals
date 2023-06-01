@@ -64,4 +64,38 @@ describe('Whitelist', () => {
         const merkle2 = new Merkle(whitelistAddresses2)
         expect(merkle1.getHexRoot()).to.be.equal(merkle2.getHexRoot())
     })
+
+    it('Should unlike when compare white root to high white root', async () => {
+        const {whitelist} = env
+
+        expect(false).to.be.equal(await whitelist.highRoot() == await whitelist.root())
+    })
+
+    it('Should success verify when user0 whilelist, but should fail verify high whitelist', async () => {
+        const {whitelist, users, merkle, highMerkle} = env
+
+        const user = users[0]
+        const {proof, leaf} =  merkle.getLeafProofAndLeaf(user.address)
+        expect(true).to.be.equal(await whitelist.verify(proof, leaf))
+
+        const high =  highMerkle.getLeafProofAndLeaf(user.address)
+        expect(false).to.be.equal(await whitelist.highVerify(high.proof, high.leaf))
+
+    })
+
+    it('Should success verify when user0 whilelist, but should success verify high whitelist', async () => {
+        const {whitelist, users, merkle, highMerkle} = env
+
+        const user = users[0]
+        const merkle2 = new Merkle([user.address])
+        whitelist.setHighRoot(merkle2.getRoot())
+
+        const {proof, leaf} =  merkle.getLeafProofAndLeaf(user.address)
+        expect(true).to.be.equal(await whitelist.verify(proof, leaf))
+
+        const high =  highMerkle.getLeafProofAndLeaf(user.address)
+        expect(true).to.be.equal(await whitelist.highVerify(high.proof, high.leaf))
+
+        expect(false).to.be.equal(await whitelist.highRoot() == await whitelist.root())
+    })
 });
