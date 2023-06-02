@@ -3,10 +3,11 @@ import {exec} from "child_process";
 import {createInterface} from 'readline'
 
 export interface IDeployments {
-    provider: string
+    provider: string;
+    referral: string;
     whitelist: string;
     stableJumper: string;
-    referral: string;
+    stakingNFT: string;
 }
 
 const pathToFolder = '/deployments'

@@ -38,4 +38,8 @@ library Errors {
 
   string public constant VL_PROXY_CONTRACT_UNINITIALIZED = '318';
   string public constant P_IMPL_GET_FAIL = '319';
+
+  string public constant SN_IS_PAUSED = '320';
+  string public constant SN_NFT_TOKENID_EXIST= '321';
+  string public constant SN_NFT_TOKENID_NOT_EXIST= '322';
 }

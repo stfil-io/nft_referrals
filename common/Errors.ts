@@ -20,3 +20,10 @@ export const RS_REFERRAL_CODE_NUM_LIMITED = '315';
 
 export const MATH_MULTIPLICATION_OVERFLOW = '316';
 export const MATH_DIVISION_BY_ZERO = '317';
+
+export const VL_PROXY_CONTRACT_UNINITIALIZED = '318';
+export const P_IMPL_GET_FAIL = '319';
+
+export const SN_IS_PAUSED = '320';
+export const SN_NFT_TOKENID_EXIST= '321';
+export const SN_NFT_TOKENID_NOT_EXIST= '322';

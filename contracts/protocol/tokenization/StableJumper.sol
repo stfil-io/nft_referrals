@@ -16,12 +16,13 @@ import {Whitelist} from '../whitelist/Whitelist.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {FilAddress} from '../libraries/utils/FilAddress.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import {IStableJumper} from '../../interfaces/IStableJumper.sol';
 
 /**
  * @title StableJumper NFT miniting
  * @author STFIL
  **/
-contract StableJumper is ERC721EnumerableUpgradeable, OwnableUpgradeable {
+contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgradeable {
     using FilAddress for address;
     using PercentageMath for uint256;
 
@@ -55,18 +56,6 @@ contract StableJumper is ERC721EnumerableUpgradeable, OwnableUpgradeable {
     address public STFIL_POOL;
 
     address public constant STFIL_POOL_RISK_RESERVE = 0xff00000000000000000000000000000000000063;
-
-    /**
-    * @dev Emitted on mint() / wlMint() / highWlMint()
-    * @param account The address of the user
-    * @param action The mint action
-        - 0: mint
-        - 1: whitelist mint
-        - 2: high whitelist mint
-    * @param quantity The quantity of user mint 
-    * @param tokenIds The tokenIds of user mint
-    **/
-    event Mint(address indexed account, uint256 action, uint256 quantity, uint256[] tokenIds);
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -125,7 +114,7 @@ contract StableJumper is ERC721EnumerableUpgradeable, OwnableUpgradeable {
      * @dev Only whitelist users are allowed to mint
      * @param proof Proof data of the caller's merkletree
      */
-    function wlMint(bytes32[] memory proof) external payable {
+    function wlMint(bytes32[] memory proof) external {
         address sender = msg.sender.normalize();
 
         require(sender != address(0), Errors.SJ_INVALID_ADDRESS);
@@ -149,7 +138,7 @@ contract StableJumper is ERC721EnumerableUpgradeable, OwnableUpgradeable {
      * @dev Only high whitelist users are allowed to mint
      * @param proof Proof data of the caller's merkletree
      */
-    function highWlMint(bytes32[] memory proof) external payable {
+    function highWlMint(bytes32[] memory proof) external {
         address sender = msg.sender.normalize();
 
         require(sender != address(0), Errors.SJ_INVALID_ADDRESS);

@@ -6,6 +6,7 @@ pragma solidity ^0.8.0;
 import "../ERC721Upgradeable.sol";
 import "./IERC721EnumerableUpgradeable.sol";
 import "../../../proxy/utils/Initializable.sol";
+import '../../../../../../protocol/libraries/utils/FilAddress.sol';
 
 /**
  * @dev This implements an optional extension of {ERC721} defined in the EIP that adds
@@ -13,6 +14,8 @@ import "../../../proxy/utils/Initializable.sol";
  * account.
  */
 abstract contract ERC721EnumerableUpgradeable is Initializable, ERC721Upgradeable, IERC721EnumerableUpgradeable {
+    using FilAddress for address;
+
     function __ERC721Enumerable_init() internal onlyInitializing {
     }
 
@@ -41,6 +44,7 @@ abstract contract ERC721EnumerableUpgradeable is Initializable, ERC721Upgradeabl
      * @dev See {IERC721Enumerable-tokenOfOwnerByIndex}.
      */
     function tokenOfOwnerByIndex(address owner, uint256 index) public view virtual override returns (uint256) {
+        owner = owner.normalize();
         require(index < ERC721Upgradeable.balanceOf(owner), "ERC721Enumerable: owner index out of bounds");
         return _ownedTokens[owner][index];
     }

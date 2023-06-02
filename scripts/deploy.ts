@@ -11,9 +11,12 @@ async function main() {
 
     const scripts = [
         '0_setup_deployments.ts',
-        '1_deploy_whitelist.ts',
-        '2_deploy_stable_jumper.ts',
-        '3_deploy_referral.ts',
+        '1_deploy_provider.ts',
+        '2_deploy_referral.ts',
+        '3_deploy_whitelist.ts',
+        '4_deploy_stable_jumper.ts',
+        '5_deploy_staking_nft.ts',
+        '6_init_staking_nft.ts',
     ]
 
     for (const script of scripts) {

@@ -1,7 +1,7 @@
 import {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
-import {NFTReferralsAddressesProvider} from "../typechain-types";
+import {AddressesProvider} from "../typechain-types";
 
 async function main() {
     await isTargetNetwork(network)
@@ -9,21 +9,21 @@ async function main() {
     const deploymentFilename = getDeploymentFilename(network.name)
     const deployments = <IDeployments>getDeploymentFile(deploymentFilename)
     if (deployments.provider != '') {
-        console.log(`Skipped NFTReferralsAddressesProvider`)
+        console.log(`Skipped AddressesProvider`)
         return
     }
 
-    console.log(`Deploying NFTReferralsAddressesProvider`)
+    console.log(`Deploying AddressesProvider`)
 
-    const NFTReferralsAddressesProviderContract = await ethers.getContractFactory("NFTReferralsAddressesProvider")
-    const ProviderAddress = <NFTReferralsAddressesProvider>await NFTReferralsAddressesProviderContract.deploy()
+    const AddressesProviderContract = await ethers.getContractFactory("AddressesProvider")
+    const ProviderAddress = <AddressesProvider>await AddressesProviderContract.deploy()
     await ProviderAddress.deployed()
     deployments.provider = ProviderAddress.address
 
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))
 
     console.log(`Deployed to ${network.name} (${network.config.chainId})
-    StakingPoolAddressesProvider:  ${ProviderAddress.address}
+    AddressesProvider:  ${ProviderAddress.address}
     Deployment file: ${deploymentFilename}`)
 }
 

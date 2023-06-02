@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import {INFTReferralsAddressesProvider} from '../../interfaces/INFTReferralsAddressesProvider.sol';
+import {IAddressesProvider} from '../../interfaces/IAddressesProvider.sol';
 import {Ownable} from "../../dependencies/openzeppelin/contracts/access/Ownable.sol";
 import {TransparentUpgradeableProxy} from "../../dependencies/openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
- * @title NFTReferralsAddressesProvider contract
- * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
+ * @title AddressesProvider contract
+ * @dev Main registry of addresses part of or connected to the protocol
  * - Acting also as factory of proxies and admin of those, so with right to change its implementations
  * - Owned by the STFIL Governance
  * @author STFIL
  **/
-contract NFTReferralsAddressesProvider is Ownable, INFTReferralsAddressesProvider {
+contract AddressesProvider is Ownable, IAddressesProvider {
 
   mapping(bytes32 => address) private _proxy_addresses;
 

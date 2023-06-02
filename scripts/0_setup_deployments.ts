@@ -13,6 +13,7 @@ async function main() {
         referral: '',
         whitelist: '',
         stableJumper: '',
+        stakingNFT: '',
     }
 
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))

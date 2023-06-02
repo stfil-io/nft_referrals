@@ -2,13 +2,13 @@
 pragma solidity ^0.8.0;
 
 /**
- * @title NFTReferralsAddressesProvider contract
+ * @title IAddressesProvider contract
  * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
  * - Acting also as factory of proxies and admin of those, so with right to change its implementations
  * - Owned by the STFIL Governance
  * @author STFIL
  **/
-interface INFTReferralsAddressesProvider {
+interface IAddressesProvider {
 
   event ProxyAddressSet(bytes32 proxyKey, address indexed newProxyAddress);
 

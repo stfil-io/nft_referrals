@@ -1,8 +1,9 @@
 import {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
-import {StableJumper, TransparentUpgradeableProxy} from "../typechain-types";
+import {AddressesProvider, StableJumper, TransparentUpgradeableProxy} from "../typechain-types";
 import {useEnv} from "../common/env";
+import {STABLE_JUMPER} from "../common/ProxyKey";
 
 async function main() {
     await isTargetNetwork(network)
@@ -34,7 +35,7 @@ async function main() {
     const whitelist = deployments.whitelist
 
     const StableJumperContract = await ethers.getContractFactory("StableJumper")
-    const StableJumperImpl = <StableJumper>await StableJumperContract.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, stFILPool, whitelist)
+    const StableJumperImpl = <StableJumper>await StableJumperContract.deploy()
     await StableJumperImpl.deployed()
 
     const TransparentUpgradeableProxyContract = await ethers.getContractFactory("TransparentUpgradeableProxy")
@@ -50,9 +51,17 @@ async function main() {
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))
 
     console.log(`Deployed to ${network.name} (${network.config.chainId})
-    StakingPool proxy:  ${StableJumperProxy.address}
-    StakingPool impl:  ${StableJumperImpl.address}
+    StableJumper proxy:  ${StableJumperProxy.address}
+    StableJumper impl:  ${StableJumperImpl.address}
     Deployment file: ${deploymentFilename}`)
+
+    console.log(`Setting StableJumper Proxy to ${StableJumperProxy.address}`)
+    const provider = <AddressesProvider>await ethers.getContractAt("AddressesProvider", deployments.provider)
+    const tx = await provider
+        .setProxy('0x' + STABLE_JUMPER, StableJumperProxy.address)
+    await tx.wait()
+    console.log(`Proxy successfully set
+    tx hash:  ${tx.hash}`)
 }
 
 main().catch((error) => {

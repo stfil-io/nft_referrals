@@ -4,13 +4,18 @@ import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {
     Whitelist,
     StableJumper,
-    ReferralStorage
+    ReferralStorage,
+    AddressesProvider,
+    StakingNFT
 } from "../../typechain-types";
 import { Merkle } from "../../common/merkle";
+import { STABLE_JUMPER, STAKING_NFT } from "../../common/ProxyKey";
 
 export interface Environment {
+    provider: AddressesProvider;
     whitelist: Whitelist;
     stableJumper: StableJumper;
+    stakingNFT: StakingNFT;
     referral: ReferralStorage;
     merkle: Merkle;
     highMerkle: Merkle;
@@ -19,14 +24,31 @@ export interface Environment {
 }
 
 const testEnv: Environment = {
+    provider: {} as AddressesProvider,
     whitelist: {} as Whitelist,
     stableJumper: {} as StableJumper,
+    stakingNFT: {} as StakingNFT,
     referral: {} as ReferralStorage,
     merkle: {} as Merkle,
     highMerkle: {} as Merkle,
     deployer: {} as SignerWithAddress,
     users: [] as SignerWithAddress[],
 } as Environment
+
+export const deployAddressesProvider = async () => {
+    const AddressesProvider = await ethers.getContractFactory("AddressesProvider")
+    const ProviderAddress = await AddressesProvider.deploy()
+    await ProviderAddress.deployed()
+    return <AddressesProvider>ProviderAddress
+}
+
+export const deployReferralStorage = async () => {
+    const ReferralStorage = await ethers.getContractFactory("ReferralStorage")
+    const ReferralStorageAddress = await ReferralStorage.deploy()
+    await ReferralStorageAddress.deployed()
+
+    return <ReferralStorage>ReferralStorageAddress
+}
 
 export const deployWhitelist = async () => {
     const Whitelist = await ethers.getContractFactory("Whitelist")
@@ -58,16 +80,20 @@ export const deployStableJumper = async () => {
     return <StableJumper>StableJumperAddress
 }
 
-export const deployReferralStorage = async () => {
-    const ReferralStorage = await ethers.getContractFactory("ReferralStorage")
-    const ReferralStorageAddress = await ReferralStorage.deploy()
-    await ReferralStorageAddress.deployed()
+export const deployStakingNFT = async () => {
+    const StakingNFT = await ethers.getContractFactory("StakingNFT")
+    const StakingNFTAddress = await upgrades.deployProxy(StakingNFT, [testEnv.provider.address])
+    await StakingNFTAddress.deployed()
 
-    return <ReferralStorage>ReferralStorageAddress
+    return <StakingNFT>StakingNFTAddress
 }
 
 export async function initializeEnv(): Promise<Environment> {
     const [_deployer, ...restSigners] = await ethers.getSigners()
+
+    testEnv.provider = await deployAddressesProvider();
+
+    testEnv.referral = await deployReferralStorage()
 
     testEnv.merkle = new Merkle(restSigners.map(signer => signer.address))
     let highRestSigners = []
@@ -85,7 +111,12 @@ export async function initializeEnv(): Promise<Environment> {
 
     testEnv.stableJumper = await deployStableJumper()
 
-    testEnv.referral = await deployReferralStorage()
+    testEnv.stakingNFT = await deployStakingNFT()
+
+    await testEnv.provider.setProxy("0x" + STABLE_JUMPER, testEnv.stableJumper.address)
+    await testEnv.provider.setProxy("0x" + STAKING_NFT, testEnv.stakingNFT.address)
    
+    await testEnv.stakingNFT.initStakingNFT()
+
     return testEnv
 }
