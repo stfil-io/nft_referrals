@@ -62,7 +62,7 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgr
         _disableInitializers();
     }
 
-    function initialize(string memory name, string memory symbol, string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, bool publicSaleOn, address stFILPool, Whitelist whitelist) external initializer {
+    function initialize(string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, bool publicSaleOn, address stFILPool, Whitelist whitelist) external initializer {
         BASE_URI = baseURI;
         MINT_PRICE = mintPrice;
         MAX_SUPPLY = maxSupply;
@@ -74,7 +74,7 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgr
 
         _whitelist = whitelist;
 
-        __ERC721_init(name, symbol);
+        __ERC721_init("StableJumper", "StableJumper");
         __Ownable_init();
     }
 

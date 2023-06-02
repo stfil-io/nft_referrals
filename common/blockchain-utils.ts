@@ -28,6 +28,8 @@ export const isValidContract = async (
 export const getNetworkPrefix = (networkName: string): CoinType => {
     if (networkName == "hyperspace") {
         return CoinType.TEST
+    } else if (networkName == "calibration") {
+        return CoinType.TEST
     } else if (networkName == "mainnet") {
         return CoinType.MAIN
     } else {

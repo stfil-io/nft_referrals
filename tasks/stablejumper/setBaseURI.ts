@@ -4,7 +4,7 @@ import {isTargetNetwork} from "../../common/blockchain-utils";
 import {string} from "hardhat/internal/core/params/argumentTypes";
 import {StableJumper} from "../../typechain-types";
 
-task("set-base-uri", "Set public sale on")
+task("set-base-uri", "Update Base URI")
     .addParam("uri", "Base URI", undefined, string, false)
     .setAction(async (params, hre) => {
         await isTargetNetwork(hre.network)

@@ -26,6 +26,11 @@ const config: HardhatUserConfig = {
             url: useEnv("NETWORK_GATEWAY"),
             accounts: [DEPLOYER],
         },
+        calibration: {
+            chainId: 314159,
+            url: useEnv("NETWORK_GATEWAY"),
+            accounts: [DEPLOYER],
+        },
         mainnet: {
             chainId: 314,
             url: useEnv("NETWORK_GATEWAY"),

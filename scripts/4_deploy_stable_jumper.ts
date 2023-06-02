@@ -17,8 +17,6 @@ async function main() {
 
     console.log(`Deploying StableJumper`)
 
-    const name = "StableJumper"
-    const symbol = "StableJumper"
     const baseURI = useEnv("BASE_URI")
     if (baseURI == '') {
         console.log('Please set the "BASE_URI" environment variable')
@@ -42,7 +40,7 @@ async function main() {
     const StableJumperProxy = <TransparentUpgradeableProxy>await TransparentUpgradeableProxyContract.deploy(
         StableJumperImpl.address,
         deployments.provider,
-        StableJumperContract.interface.encodeFunctionData("initialize", [name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, stFILPool, whitelist])
+        StableJumperContract.interface.encodeFunctionData("initialize", [baseURI, mintPrice, maxSupply, publicMintUpperLimit, true, stFILPool, whitelist])
     )
     await StableJumperProxy.deployed()
 

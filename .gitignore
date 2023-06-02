@@ -86,6 +86,7 @@ typechain-types
 # dotenv environment variables file
 .env
 .env.hyperspace
+.env.calibration
 .env.mainnet
 
 # parcel-bundler cache (https://parceljs.org/)
