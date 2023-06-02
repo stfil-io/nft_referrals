@@ -10,9 +10,8 @@ pragma solidity ^0.8.0;
 * Brave Leaps in the Journey of Stability!
 / -------------------------------------------------------------------------- */
 
-import '../../dependencies/openzeppelin/contracts/access/Ownable.sol';
-import {ERC721} from '../../dependencies/openzeppelin/contracts/token/ERC721/ERC721.sol';
-import {ERC721Enumerable} from '../../dependencies/openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol';
+import '../../dependencies/openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
+import {ERC721EnumerableUpgradeable} from '../../dependencies/openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol';
 import {Whitelist} from '../whitelist/Whitelist.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {FilAddress} from '../libraries/utils/FilAddress.sol';
@@ -22,7 +21,7 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
  * @title StableJumper NFT miniting
  * @author STFIL
  **/
-contract StableJumper is ERC721Enumerable, Ownable {
+contract StableJumper is ERC721EnumerableUpgradeable, OwnableUpgradeable {
     using FilAddress for address;
     using PercentageMath for uint256;
 
@@ -30,11 +29,11 @@ contract StableJumper is ERC721Enumerable, Ownable {
 
     uint256 public MINT_PRICE;
 
-    uint256 public immutable MAX_SUPPLY;
+    uint256 public MAX_SUPPLY;
 
-    uint256 public immutable PUBLIC_MINT_UPPER_LIMIT;
+    uint256 public PUBLIC_MINT_UPPER_LIMIT;
 
-    bool public PUBLIC_SALE_ON = false;
+    bool public PUBLIC_SALE_ON;
 
     Whitelist internal _whitelist;
 
@@ -69,16 +68,25 @@ contract StableJumper is ERC721Enumerable, Ownable {
     **/
     event Mint(address indexed account, uint256 action, uint256 quantity, uint256[] tokenIds);
 
-    constructor(string memory name, string memory symbol, string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, address stFILPool, Whitelist whitelist) ERC721(name, symbol) {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(string memory name, string memory symbol, string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, bool publicSaleOn, address stFILPool, Whitelist whitelist) external initializer {
         BASE_URI = baseURI;
         MINT_PRICE = mintPrice;
         MAX_SUPPLY = maxSupply;
         PUBLIC_MINT_UPPER_LIMIT = publicMintUpperLimit;
+        PUBLIC_SALE_ON = publicSaleOn;
 
         require(stFILPool != address(0), Errors.SJ_INVALID_POOL_ADDRESS);
         STFIL_POOL = stFILPool;
 
         _whitelist = whitelist;
+
+        __ERC721_init(name, symbol);
+        __Ownable_init();
     }
 
     /**

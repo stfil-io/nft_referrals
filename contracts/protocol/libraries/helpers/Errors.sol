@@ -10,6 +10,7 @@ pragma solidity ^0.8.0;
  *  - SJ = StableJumper
  *  - RS = ReferralStorage
  *  - MATH = Math libraries
+ *  - P = Provider
  */
 library Errors {
   //contract specific errors
@@ -34,4 +35,7 @@ library Errors {
 
   string public constant MATH_MULTIPLICATION_OVERFLOW = '316';
   string public constant MATH_DIVISION_BY_ZERO = '317';
+
+  string public constant VL_PROXY_CONTRACT_UNINITIALIZED = '318';
+  string public constant P_IMPL_GET_FAIL = '319';
 }

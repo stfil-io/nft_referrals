@@ -3,6 +3,7 @@ import {exec} from "child_process";
 import {createInterface} from 'readline'
 
 export interface IDeployments {
+    provider: string
     whitelist: string;
     stableJumper: string;
     referral: string;

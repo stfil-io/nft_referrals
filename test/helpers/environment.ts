@@ -1,4 +1,4 @@
-import {ethers} from "hardhat";
+import {ethers, upgrades} from "hardhat";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
 import {
@@ -49,9 +49,10 @@ export const deployStableJumper = async () => {
     const mintPrice = ethers.utils.parseEther("10") 
     const maxSupply = 10 
     const publicMintUpperLimit = 5 
+    const publicSaleOn = false
     const stFILPool = STFILPoolAddress.address 
     const whitelist = testEnv.whitelist.address
-    const StableJumperAddress = await StableJumper.deploy(name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, stFILPool, whitelist)
+    const StableJumperAddress = await upgrades.deployProxy(StableJumper, [name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, publicSaleOn, stFILPool, whitelist])
     await StableJumperAddress.deployed()
 
     return <StableJumper>StableJumperAddress

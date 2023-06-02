@@ -9,9 +9,10 @@ async function main() {
 
     const deploymentFilename = getDeploymentFilename(network.name)
     const deployments: IDeployments = {
+        provider: '',
+        referral: '',
         whitelist: '',
         stableJumper: '',
-        referral: '',
     }
 
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))
