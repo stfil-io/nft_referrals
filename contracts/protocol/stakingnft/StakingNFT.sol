@@ -34,6 +34,8 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
 
   mapping (address => EnumerableSet.UintSet) internal _ownerTokenIds;
 
+  EnumerableSet.UintSet internal _collectionTokenIdSet;
+
   struct StableJumperNFT {
     uint256 tokenId;
     uint256 power;
@@ -73,6 +75,7 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
   function stake(uint256 tokenId) external whenNotPaused {
     address sender = msg.sender.normalize();
     require(_ownerTokenIds[sender].add(tokenId), Errors.SN_NFT_TOKENID_EXIST);
+    require(_collectionTokenIdSet.add(tokenId), Errors.SN_NFT_TOKENID_EXIST);
 
     _totalPower += IStableJumper(_stableJumperAddress).getPowerByTokenId(tokenId);
     IERC721(_stableJumperAddress).safeTransferFrom(msg.sender, address(this), tokenId);
@@ -87,6 +90,7 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
   function unstake(uint256 tokenId) external whenNotPaused {
     address sender = msg.sender.normalize();
     require(_ownerTokenIds[sender].remove(tokenId), Errors.SN_NFT_TOKENID_NOT_EXIST);
+    require(_collectionTokenIdSet.remove(tokenId), Errors.SN_NFT_TOKENID_NOT_EXIST);
    
     _totalPower -= IStableJumper(_stableJumperAddress).getPowerByTokenId(tokenId);
     IERC721(_stableJumperAddress).approve(sender, tokenId);
@@ -147,6 +151,16 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
    **/
   function viewOwnerCollectionsSize(address owner) external view returns(uint256) {
     return _ownerTokenIds[owner.normalize()].length();
+  }
+
+  /**
+   * @dev Returns the nft stake status and power
+   **/
+  function getNFTInfo(uint256 tokenId) external view returns(bool, uint256) {
+    if (!_collectionTokenIdSet.contains(tokenId)) {
+      return (false, 0);
+    }
+    return (true, IStableJumper(_stableJumperAddress).getPowerByTokenId(tokenId));
   }
 
   /**

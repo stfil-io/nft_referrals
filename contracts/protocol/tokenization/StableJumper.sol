@@ -229,15 +229,18 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgr
 
     function _random(uint256 tokenId) internal view returns (uint256) {
         uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), msg.sender, block.timestamp, tokenId)));
-        uint256 val = rand % 900;
-        return val < 100 ? val + 100 : val;
+        uint256 val = rand % 1000;
+        if (val < 500) {
+            return 500 + rand % 500;
+        } 
+        return val;
     }
 
     function _highRandom(uint256 tokenId) internal view returns (uint256) {
         uint256 rand = uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), msg.sender, block.timestamp, tokenId)));
-        uint256 val = rand % 1000;
-        if (val < 900) {
-            return 900 + rand % 100;
+        uint256 val = rand % 2000;
+        if (val < 1500) {
+            return 1500 + rand % 500;
         } 
         return val;
     }
