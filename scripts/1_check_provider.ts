@@ -1,4 +1,4 @@
-import {ethers, network} from "hardhat";
+import {network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
 import { useEnv } from "../common/env";
@@ -18,7 +18,7 @@ async function main() {
         console.log('Please set the "ADDRESSES_PROVIDER" environment variable')
         return;
     }
-    console.log(`Deploying AddressesProvider`)
+    console.log(`Checked AddressesProvider`)
 
     deployments.provider = provider
 

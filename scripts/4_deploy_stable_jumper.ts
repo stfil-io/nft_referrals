@@ -3,7 +3,8 @@ import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from 
 import {accounts, isTargetNetwork} from "../common/blockchain-utils";
 import {StakingPoolAddressesProvider, StableJumper, TransparentUpgradeableProxy} from "../typechain-types";
 import {useEnv} from "../common/env";
-import {STABLE_JUMPER} from "../common/ProxyKey";
+import {STABLE_JUMPER, STAKING_POOL} from "../common/ProxyKey";
+import {ZERO_ADDRESS} from "../common/constants";
 
 async function main() {
     await isTargetNetwork(network)
@@ -25,10 +26,11 @@ async function main() {
     const mintPrice = ethers.utils.parseEther("10")
     const maxSupply = 10000
     const publicMintUpperLimit = 5000
-    const stFILPool = useEnv("STFIL_POOL")
-    if (stFILPool == '') {
-        console.log('Please set the "STFIL_POOL" environment variable')
-        return;
+
+    const provider = <StakingPoolAddressesProvider>await ethers.getContractAt("StakingPoolAddressesProvider", deployments.provider)
+    const stakingPoolProxy = await provider.getProxy('0x' + STAKING_POOL);
+    if (stakingPoolProxy == ZERO_ADDRESS) {
+        throw new Error(`Please deploy staking pool first ?`)
     }
     const whitelist = deployments.whitelist
 
@@ -40,7 +42,7 @@ async function main() {
     const StableJumperProxy = <TransparentUpgradeableProxy>await TransparentUpgradeableProxyContract.deploy(
         StableJumperImpl.address,
         deployments.provider,
-        StableJumperContract.interface.encodeFunctionData("initialize", [deployments.provider, baseURI, mintPrice, maxSupply, publicMintUpperLimit, true, stFILPool, whitelist])
+        StableJumperContract.interface.encodeFunctionData("initialize", [deployments.provider, baseURI, mintPrice, maxSupply, publicMintUpperLimit, true, stakingPoolProxy, whitelist])
     )
     await StableJumperProxy.deployed()
 
@@ -55,7 +57,6 @@ async function main() {
 
     console.log(`Setting StableJumper Proxy to ${StableJumperProxy.address}`)
     const {contractsAdmin} = await accounts(hre);
-    const provider = <StakingPoolAddressesProvider>await ethers.getContractAt("StakingPoolAddressesProvider", deployments.provider)
     const tx = await provider
         .connect(contractsAdmin)
         .setProxy('0x' + STABLE_JUMPER, StableJumperProxy.address)
