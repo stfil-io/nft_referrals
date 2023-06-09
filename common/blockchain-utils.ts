@@ -52,10 +52,11 @@ export const isTargetNetwork = async (
 export const accounts = async (
     hre: HardhatRuntimeEnvironment
 ): Promise<{
-    deployer: SignerWithAddress
+    deployer: SignerWithAddress,
+    contractsAdmin: SignerWithAddress,
 }> => {
-    const [deployer] = await hre.ethers.getSigners()
-    return {deployer};
+    const [deployer, contractsAdmin] = await hre.ethers.getSigners()
+    return {deployer, contractsAdmin};
 }
 
 export const getActorId = (id: number | string, networkPrefix: CoinType): string => {

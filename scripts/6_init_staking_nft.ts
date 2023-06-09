@@ -1,7 +1,7 @@
 import {getDeploymentFile, getDeploymentFilename, IDeployments} from '../common/common'
 import {ethers, network} from "hardhat";
 import {STABLE_JUMPER} from "../common/ProxyKey";
-import {AddressesProvider, StakingNFT} from "../typechain-types";
+import {StakingPoolAddressesProvider, StakingNFT} from "../typechain-types";
 import {isTargetNetwork} from "../common/blockchain-utils";
 import {ZERO_ADDRESS} from "../common/constants";
 
@@ -13,7 +13,7 @@ async function main() {
 
     console.log(`Initializing StakingNFT`)
 
-    const provider = <AddressesProvider>await ethers.getContractAt("AddressesProvider", deployments.provider)
+    const provider = <StakingPoolAddressesProvider>await ethers.getContractAt("StakingPoolAddressesProvider", deployments.provider)
     const stableJumperProxy = await provider.getProxy('0x' + STABLE_JUMPER);
     if (stableJumperProxy == ZERO_ADDRESS) {
         throw new Error(`Please deploy stable jumper first ?`)

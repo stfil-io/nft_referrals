@@ -1,7 +1,7 @@
 import {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
 import {isTargetNetwork} from "../common/blockchain-utils";
-import {AddressesProvider} from "../typechain-types";
+import { useEnv } from "../common/env";
 
 async function main() {
     await isTargetNetwork(network)
@@ -13,17 +13,19 @@ async function main() {
         return
     }
 
+    const provider = useEnv("ADDRESSES_PROVIDER");
+    if (provider == '') {
+        console.log('Please set the "ADDRESSES_PROVIDER" environment variable')
+        return;
+    }
     console.log(`Deploying AddressesProvider`)
 
-    const AddressesProviderContract = await ethers.getContractFactory("AddressesProvider")
-    const ProviderAddress = <AddressesProvider>await AddressesProviderContract.deploy()
-    await ProviderAddress.deployed()
-    deployments.provider = ProviderAddress.address
+    deployments.provider = provider
 
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))
 
     console.log(`Deployed to ${network.name} (${network.config.chainId})
-    AddressesProvider:  ${ProviderAddress.address}
+    AddressesProvider:  ${provider}
     Deployment file: ${deploymentFilename}`)
 }
 

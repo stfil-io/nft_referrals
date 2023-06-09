@@ -9,7 +9,6 @@ import "./tasks";
 
 const DEPLOYER = useEnv("DEPLOYER");
 const CONTRACTS_ADMIN_KEY = useEnv("CONTRACTS_ADMIN_KEY");
-const ADDRESSES_PROVIDER_KEY = useEnv("ADDRESSES_PROVIDER_KEY");
 
 const config: HardhatUserConfig = {
     solidity: {
@@ -26,12 +25,12 @@ const config: HardhatUserConfig = {
         calibration: {
             chainId: 314159,
             url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER, CONTRACTS_ADMIN_KEY, ADDRESSES_PROVIDER_KEY],
+            accounts: [DEPLOYER, CONTRACTS_ADMIN_KEY],
         },
         mainnet: {
             chainId: 314,
             url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER, CONTRACTS_ADMIN_KEY, ADDRESSES_PROVIDER_KEY],
+            accounts: [DEPLOYER, CONTRACTS_ADMIN_KEY],
         }
     },
     gasReporter: {

@@ -1,7 +1,7 @@
-import {ethers, network} from "hardhat";
+import hre, {ethers, network} from "hardhat";
 import {getDeploymentFile, getDeploymentFilename, IDeployments, writeFile} from "../common/common";
-import {isTargetNetwork} from "../common/blockchain-utils";
-import {AddressesProvider, StakingNFT, TransparentUpgradeableProxy} from "../typechain-types";
+import {accounts, isTargetNetwork} from "../common/blockchain-utils";
+import {StakingPoolAddressesProvider, StakingNFT, TransparentUpgradeableProxy} from "../typechain-types";
 import {STAKING_NFT} from "../common/ProxyKey";
 
 async function main() {
@@ -38,8 +38,10 @@ async function main() {
     Deployment file: ${deploymentFilename}`)
 
     console.log(`Setting StakingNFT Proxy to ${StakingNFTProxy.address}`)
-    const provider = <AddressesProvider>await ethers.getContractAt("AddressesProvider", deployments.provider)
+    const {contractsAdmin} = await accounts(hre);
+    const provider = <StakingPoolAddressesProvider>await ethers.getContractAt("StakingPoolAddressesProvider", deployments.provider)
     const tx = await provider
+        .connect(contractsAdmin)
         .setProxy('0x' + STAKING_NFT, StakingNFTProxy.address)
     await tx.wait()
     console.log(`Proxy successfully set
