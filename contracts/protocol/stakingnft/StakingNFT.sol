@@ -41,7 +41,7 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable{
     uint256 power;
   }
 
-  modifier onlyContracstAdmin {
+  modifier onlyContractsAdmin {
     require(_addressesProvider.hasRole(Role.CONTRACTS_ADMIN_ROLE, msg.sender), Errors.CALLER_NOT_CONTRACTS_ADMIN);
     _;
   }
@@ -177,7 +177,7 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable{
    * @dev Set the _pause state of the staking NFT
    * @param val `true` to pause the staking NFT, `false` to un-pause it
    */
-  function setPause(bool val) external override onlyContracstAdmin {
+  function setPause(bool val) external override onlyContractsAdmin {
     _paused = val;
     if (_paused) {
       emit Paused();

@@ -23,10 +23,6 @@ async function main() {
     deployments.provider = provider
 
     await writeFile(deploymentFilename, JSON.stringify(deployments, null, 2))
-
-    console.log(`Deployed to ${network.name} (${network.config.chainId})
-    AddressesProvider:  ${provider}
-    Deployment file: ${deploymentFilename}`)
 }
 
 main().catch((error) => {

@@ -11,7 +11,7 @@ async function main() {
 
     const scripts = [
         '0_setup_deployments.ts',
-        '1_deploy_provider.ts',
+        '1_check_provider.ts',
         '2_deploy_referral.ts',
         '3_deploy_whitelist.ts',
         '4_deploy_stable_jumper.ts',
