@@ -50,37 +50,37 @@ describe('StableJumper', () => {
     })
 
     it('Should fail when user0 mint quantity 1 but price 0', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
         const user = users[0]
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
 
         await expect(stableJumper.connect(user).mint(1)).rejectedWith(SJ_MINT_PRICE_ERROR)
     })
 
     it('Should success when user0 mint quantity 1, price = mintPrice', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
         const user = users[0]
         const mintPrice = await stableJumper.MINT_PRICE()
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         await stableJumper.connect(user).mint(1, {value: mintPrice})
         expect(1).to.be.equal(await stableJumper.balanceOf(user.address))
     })
 
     it('Should success when user0 mint quantity 2', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
         const user = users[0]
         const quantity = 2
         const mintPrice = await stableJumper.MINT_PRICE()
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         await stableJumper.connect(user).mint(quantity, {value: mintPrice.mul(quantity)})
         expect(quantity).to.be.equal(await stableJumper.balanceOf(user.address))
     })
 
     it('Should fail when user0 mint quantity > maxSupply', async () => {
-        const {stableJumper, users, deployer, merkle} = env
+        const {stableJumper, users, contractsAdmin, merkle} = env
 
         const maxSupply = (await stableJumper.MAX_SUPPLY()).toNumber()
         for(let i=0; i<maxSupply; i++) {
@@ -91,14 +91,14 @@ describe('StableJumper', () => {
         const user = users[0]
         const mintPrice = await stableJumper.getActualMintPrice(1)
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         await expect(stableJumper.connect(user).mint(1, {value: mintPrice})).rejectedWith(SJ_MAX_SUPPLY_EXCEEDED)
     })
 
     it('Should fail when user0 mint 3, user2 mint 2, user0 mint 1', async () => {
-        const {stableJumper, users, merkle, deployer} = env
+        const {stableJumper, users, merkle, contractsAdmin} = env
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         
         await stableJumper.connect(users[0]).mint(3, {value: await stableJumper.getActualMintPrice(3)})
         await stableJumper.connect(users[1]).mint(2, {value: await stableJumper.getActualMintPrice(2)})
@@ -106,21 +106,21 @@ describe('StableJumper', () => {
     })
 
     it('Should fail when user0 mint 4', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         
         await expect(stableJumper.connect(users[0]).mint(4, {value: await stableJumper.getActualMintPrice(4)})).rejectedWith(SJ_MINT_QUANTITY_EXCEEDED)
     })
     
     it('Should nft power when user0 mint quantity 2', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
        
         const user = users[0]
         const quantity = 2
         const mintPrice = await stableJumper.MINT_PRICE()
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         await stableJumper.connect(user).mint(quantity, {value: mintPrice.mul(quantity)})
 
         const indexs = (await stableJumper.balanceOf(user.address)).toNumber()
@@ -133,11 +133,11 @@ describe('StableJumper', () => {
     })
 
     it('Set base URI', async () => {
-        const {stableJumper, users, deployer, merkle} = env
+        const {stableJumper, users, contractsAdmin, merkle} = env
         const user = users[0]
 
         const baseURI = "https://example.com/"
-        await stableJumper.connect(deployer).setBaseURI(baseURI)
+        await stableJumper.connect(contractsAdmin).setBaseURI(baseURI)
 
         const proof =  merkle.getLeafProof(user.address)
         await stableJumper.connect(user).wlMint(proof)
@@ -148,21 +148,21 @@ describe('StableJumper', () => {
     })
 
     it('Set mint price', async () => {
-        const {stableJumper} = env
+        const {stableJumper, contractsAdmin} = env
 
         const mintPrice = ethers.utils.parseEther("30")
         
-        await stableJumper.setMintPrice(mintPrice)
+        await stableJumper.connect(contractsAdmin).setMintPrice(mintPrice)
         expect(mintPrice).to.be.equal(await stableJumper.MINT_PRICE())
     })
 
     it('Mint price idempotent once when user0 mint quantity 3', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
        
         const user = users[0]
         const quantity = 3
         
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
 
         const mintPrice = await stableJumper.getActualMintPrice(quantity)
 
@@ -174,9 +174,9 @@ describe('StableJumper', () => {
     })
 
     it('Mint price idempotent twice when wlmint mint 4, user0 mint 1', async () => {
-        const {stableJumper, users, merkle, deployer} = env
+        const {stableJumper, users, merkle, contractsAdmin} = env
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         
         for(let i=0; i<4; i++) {
             const proof =  merkle.getLeafProof(users[i].address)
@@ -191,9 +191,9 @@ describe('StableJumper', () => {
     })
 
     it('User0 remaining mint quantity 2 when user0 mint 1', async () => {
-        const {stableJumper, users, deployer} = env
+        const {stableJumper, users, contractsAdmin} = env
 
-        await stableJumper.connect(deployer).setPublicSaleOn(true)
+        await stableJumper.connect(contractsAdmin).setPublicSaleOn(true)
         
         await stableJumper.connect(users[0]).mint(1, {value: await stableJumper.getActualMintPrice(1)})
 

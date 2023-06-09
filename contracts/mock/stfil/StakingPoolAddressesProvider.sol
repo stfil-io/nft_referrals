@@ -1,21 +1,27 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import {IAddressesProvider} from '../../interfaces/IAddressesProvider.sol';
+import {IStakingPoolAddressesProvider} from '../../interfaces/IStakingPoolAddressesProvider.sol';
 import {Ownable} from "../../dependencies/openzeppelin/contracts/access/Ownable.sol";
+import {AccessControl} from "../../dependencies/openzeppelin/contracts/access/AccessControl.sol";
 import {TransparentUpgradeableProxy} from "../../dependencies/openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
-import {Errors} from '../libraries/helpers/Errors.sol';
+import {Errors} from './libraries/Errors.sol';
+import {Role} from '../../protocol/libraries/types/Role.sol';
 
 /**
- * @title AddressesProvider contract
- * @dev Main registry of addresses part of or connected to the protocol
+ * @title StakingPoolAddressesProvider contract
+ * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
  * - Acting also as factory of proxies and admin of those, so with right to change its implementations
  * - Owned by the STFIL Governance
  * @author STFIL
  **/
-contract AddressesProvider is Ownable, IAddressesProvider {
+contract StakingPoolAddressesProvider is AccessControl, IStakingPoolAddressesProvider {
 
   mapping(bytes32 => address) private _proxy_addresses;
+
+  constructor(){
+    _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+  }
 
   /**
    * @dev Returns an address by proxy
@@ -32,7 +38,7 @@ contract AddressesProvider is Ownable, IAddressesProvider {
    * @param proxyKey The proxy key
    * @param newProxyAddress The address to set
   */
-  function setProxy(bytes32 proxyKey, address newProxyAddress) external override onlyOwner {
+  function setProxy(bytes32 proxyKey, address newProxyAddress) external override onlyRole(Role.CONTRACTS_ADMIN_ROLE) {
     _proxy_addresses[proxyKey] = newProxyAddress;
     emit ProxyAddressSet(proxyKey, newProxyAddress);
   }
@@ -59,7 +65,7 @@ contract AddressesProvider is Ownable, IAddressesProvider {
    * @param proxyKey The proxy key
    * @param implementation The address of the new implementation
   */
-  function upgrade(bytes32 proxyKey, address implementation) external onlyOwner {
+  function upgrade(bytes32 proxyKey, address implementation) external onlyRole(Role.CONTRACTS_ADMIN_ROLE) {
     address payable proxyAddress = payable(_proxy_addresses[proxyKey]);
     require(proxyAddress != address(0), Errors.VL_PROXY_CONTRACT_UNINITIALIZED);
 
@@ -74,7 +80,7 @@ contract AddressesProvider is Ownable, IAddressesProvider {
    * @param implementation The address of the new implementation
    * @param data The data is an encoded function call
   */
-  function upgradeAndCall(bytes32 proxyKey, address implementation, bytes memory data) external payable onlyOwner {
+  function upgradeAndCall(bytes32 proxyKey, address implementation, bytes memory data) external payable onlyRole(Role.CONTRACTS_ADMIN_ROLE) {
     address payable proxyAddress = payable(_proxy_addresses[proxyKey]);
     require(proxyAddress != address(0), Errors.VL_PROXY_CONTRACT_UNINITIALIZED);
 

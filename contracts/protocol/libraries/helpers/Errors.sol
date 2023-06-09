@@ -36,10 +36,9 @@ library Errors {
   string public constant MATH_MULTIPLICATION_OVERFLOW = '316';
   string public constant MATH_DIVISION_BY_ZERO = '317';
 
-  string public constant VL_PROXY_CONTRACT_UNINITIALIZED = '318';
-  string public constant P_IMPL_GET_FAIL = '319';
+  string public constant SN_IS_PAUSED = '318';
+  string public constant SN_NFT_TOKENID_EXIST= '319';
+  string public constant SN_NFT_TOKENID_NOT_EXIST= '320';
 
-  string public constant SN_IS_PAUSED = '320';
-  string public constant SN_NFT_TOKENID_EXIST= '321';
-  string public constant SN_NFT_TOKENID_NOT_EXIST= '322';
+  string public constant CALLER_NOT_CONTRACTS_ADMIN = '321';
 }

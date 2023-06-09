@@ -10,21 +10,24 @@ pragma solidity ^0.8.0;
 * Brave Leaps in the Journey of Stability!
 / -------------------------------------------------------------------------- */
 
-import '../../dependencies/openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import {ERC721EnumerableUpgradeable} from '../../dependencies/openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol';
 import {Whitelist} from '../whitelist/Whitelist.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {FilAddress} from '../libraries/utils/FilAddress.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IStableJumper} from '../../interfaces/IStableJumper.sol';
+import {IStakingPoolAddressesProvider} from '../../interfaces/IStakingPoolAddressesProvider.sol';
+import {Role} from '../libraries/types/Role.sol';
 
 /**
  * @title StableJumper NFT miniting
  * @author STFIL
  **/
-contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgradeable {
+contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable {
     using FilAddress for address;
     using PercentageMath for uint256;
+
+    IStakingPoolAddressesProvider internal _addressesProvider;  
 
     string public BASE_URI;
 
@@ -57,12 +60,19 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgr
 
     address public constant STFIL_POOL_RISK_RESERVE = 0xff00000000000000000000000000000000000063;
 
+    modifier onlyContracstAdmin {
+        require(_addressesProvider.hasRole(Role.CONTRACTS_ADMIN_ROLE, msg.sender), Errors.CALLER_NOT_CONTRACTS_ADMIN);
+        _;
+    }
+
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, bool publicSaleOn, address stFILPool, Whitelist whitelist) external initializer {
+    function initialize(IStakingPoolAddressesProvider provider, string memory baseURI, uint256 mintPrice, uint256 maxSupply, uint256 publicMintUpperLimit, bool publicSaleOn, address stFILPool, Whitelist whitelist) external initializer {
+        _addressesProvider = provider;
+
         BASE_URI = baseURI;
         MINT_PRICE = mintPrice;
         MAX_SUPPLY = maxSupply;
@@ -75,7 +85,6 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgr
         _whitelist = whitelist;
 
         __ERC721_init("StableJumper", "StableJumper");
-        __Ownable_init();
     }
 
     /**
@@ -205,21 +214,21 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable, OwnableUpgr
     /**
      * @dev Set the base URI address
      **/
-    function setBaseURI(string memory baseURI) external onlyOwner {
+    function setBaseURI(string memory baseURI) external onlyContracstAdmin {
         BASE_URI = baseURI;
     }
 
     /**
      * @dev Switch settings for public sale
      **/
-    function setPublicSaleOn(bool state) external onlyOwner {
+    function setPublicSaleOn(bool state) external onlyContracstAdmin {
         PUBLIC_SALE_ON = state;
     }
 
     /**
      * @dev Set the mint price
      **/
-    function setMintPrice(uint256 mintPrice) external onlyOwner {
+    function setMintPrice(uint256 mintPrice) external onlyContracstAdmin {
         MINT_PRICE = mintPrice;
     }
 

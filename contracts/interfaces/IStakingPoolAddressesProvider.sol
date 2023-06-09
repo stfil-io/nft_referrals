@@ -1,15 +1,21 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import {IAccessControl} from  "../dependencies/openzeppelin/contracts/access/IAccessControl.sol";
+
 /**
- * @title IAddressesProvider contract
+ * @title StakingPoolAddressesProvider contract
  * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
  * - Acting also as factory of proxies and admin of those, so with right to change its implementations
  * - Owned by the STFIL Governance
  * @author STFIL
  **/
-interface IAddressesProvider {
+interface IStakingPoolAddressesProvider is IAccessControl {
 
+  event StakingPoolUpdated(address indexed newAddress);
+  event ConfigurationAdminUpdated(address indexed newAddress);
+  event EmergencyAdminUpdated(address indexed newAddress);
+  event StakingPoolConfiguratorUpdated(address indexed newAddress);
   event ProxyAddressSet(bytes32 proxyKey, address indexed newProxyAddress);
 
   /**

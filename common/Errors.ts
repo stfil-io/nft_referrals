@@ -1,4 +1,3 @@
-//contract specific errors
 export const WL_INVALID_PERMISSIONS = '300';
 
 export const SJ_INVALID_ADDRESS = '301';
@@ -21,9 +20,8 @@ export const RS_REFERRAL_CODE_NUM_LIMITED = '315';
 export const MATH_MULTIPLICATION_OVERFLOW = '316';
 export const MATH_DIVISION_BY_ZERO = '317';
 
-export const VL_PROXY_CONTRACT_UNINITIALIZED = '318';
-export const P_IMPL_GET_FAIL = '319';
+export const SN_IS_PAUSED = '318';
+export const SN_NFT_TOKENID_EXIST= '319';
+export const SN_NFT_TOKENID_NOT_EXIST= '320';
 
-export const SN_IS_PAUSED = '320';
-export const SN_NFT_TOKENID_EXIST= '321';
-export const SN_NFT_TOKENID_NOT_EXIST= '322';
+export const CALLER_NOT_CONTRACTS_ADMIN = '321';

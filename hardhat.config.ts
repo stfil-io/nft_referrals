@@ -8,6 +8,8 @@ import 'hardhat-gas-reporter'
 import "./tasks";
 
 const DEPLOYER = useEnv("DEPLOYER");
+const CONTRACTS_ADMIN_KEY = useEnv("CONTRACTS_ADMIN_KEY");
+const ADDRESSES_PROVIDER_KEY = useEnv("ADDRESSES_PROVIDER_KEY");
 
 const config: HardhatUserConfig = {
     solidity: {
@@ -21,20 +23,15 @@ const config: HardhatUserConfig = {
     },
     defaultNetwork: "hardhat",
     networks: {
-        hyperspace: {
-            chainId: 3141,
-            url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER],
-        },
         calibration: {
             chainId: 314159,
             url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER],
+            accounts: [DEPLOYER, CONTRACTS_ADMIN_KEY, ADDRESSES_PROVIDER_KEY],
         },
         mainnet: {
             chainId: 314,
             url: useEnv("NETWORK_GATEWAY"),
-            accounts: [DEPLOYER],
+            accounts: [DEPLOYER, CONTRACTS_ADMIN_KEY, ADDRESSES_PROVIDER_KEY],
         }
     },
     gasReporter: {

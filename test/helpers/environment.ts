@@ -5,14 +5,15 @@ import {
     Whitelist,
     StableJumper,
     ReferralStorage,
-    AddressesProvider,
+    StakingPoolAddressesProvider,
     StakingNFT
 } from "../../typechain-types";
 import { Merkle } from "../../common/merkle";
 import { STABLE_JUMPER, STAKING_NFT } from "../../common/ProxyKey";
+import { CONTRACTS_ADMIN } from "../../common/Role";
 
 export interface Environment {
-    provider: AddressesProvider;
+    provider: StakingPoolAddressesProvider;
     whitelist: Whitelist;
     stableJumper: StableJumper;
     stakingNFT: StakingNFT;
@@ -20,11 +21,12 @@ export interface Environment {
     merkle: Merkle;
     highMerkle: Merkle;
     deployer: SignerWithAddress;
+    contractsAdmin: SignerWithAddress;
     users: SignerWithAddress[];
 }
 
 const testEnv: Environment = {
-    provider: {} as AddressesProvider,
+    provider: {} as StakingPoolAddressesProvider,
     whitelist: {} as Whitelist,
     stableJumper: {} as StableJumper,
     stakingNFT: {} as StakingNFT,
@@ -32,14 +34,17 @@ const testEnv: Environment = {
     merkle: {} as Merkle,
     highMerkle: {} as Merkle,
     deployer: {} as SignerWithAddress,
+    contractsAdmin: {} as SignerWithAddress,
     users: [] as SignerWithAddress[],
 } as Environment
 
-export const deployAddressesProvider = async () => {
-    const AddressesProvider = await ethers.getContractFactory("AddressesProvider")
-    const ProviderAddress = await AddressesProvider.deploy()
+export const deployStakingPoolAddressesProvider = async () => {
+    const StakingPoolAddressesProvider = await ethers.getContractFactory("StakingPoolAddressesProvider")
+    const ProviderAddress = await StakingPoolAddressesProvider.deploy()
     await ProviderAddress.deployed()
-    return <AddressesProvider>ProviderAddress
+    let tx = await ProviderAddress.grantRole("0x" + CONTRACTS_ADMIN, testEnv.contractsAdmin.address)
+    await tx.wait()
+    return <StakingPoolAddressesProvider>ProviderAddress
 }
 
 export const deployReferralStorage = async () => {
@@ -65,8 +70,6 @@ export const deployStableJumper = async () => {
 
     const StableJumper = await ethers.getContractFactory("StableJumper")
 
-    const name = "StableJumper"
-    const symbol = "StableJumper"
     const baseURI = ""
     const mintPrice = ethers.utils.parseEther("10") 
     const maxSupply = 10 
@@ -74,7 +77,7 @@ export const deployStableJumper = async () => {
     const publicSaleOn = false
     const stFILPool = STFILPoolAddress.address 
     const whitelist = testEnv.whitelist.address
-    const StableJumperAddress = await upgrades.deployProxy(StableJumper, [name, symbol, baseURI, mintPrice, maxSupply, publicMintUpperLimit, publicSaleOn, stFILPool, whitelist])
+    const StableJumperAddress = await upgrades.deployProxy(StableJumper, [testEnv.provider.address, baseURI, mintPrice, maxSupply, publicMintUpperLimit, publicSaleOn, stFILPool, whitelist])
     await StableJumperAddress.deployed()
 
     return <StableJumper>StableJumperAddress
@@ -89,9 +92,11 @@ export const deployStakingNFT = async () => {
 }
 
 export async function initializeEnv(): Promise<Environment> {
-    const [_deployer, ...restSigners] = await ethers.getSigners()
+    const [_deployer, _contractsAdmin, ...restSigners] = await ethers.getSigners()
+    testEnv.deployer = _deployer
+    testEnv.contractsAdmin = _contractsAdmin
 
-    testEnv.provider = await deployAddressesProvider();
+    testEnv.provider = await deployStakingPoolAddressesProvider();
 
     testEnv.referral = await deployReferralStorage()
 
@@ -107,14 +112,12 @@ export async function initializeEnv(): Promise<Environment> {
         testEnv.users.push(signer)
     }
 
-    testEnv.deployer = _deployer
-
     testEnv.stableJumper = await deployStableJumper()
 
     testEnv.stakingNFT = await deployStakingNFT()
 
-    await testEnv.provider.setProxy("0x" + STABLE_JUMPER, testEnv.stableJumper.address)
-    await testEnv.provider.setProxy("0x" + STAKING_NFT, testEnv.stakingNFT.address)
+    await testEnv.provider.connect(testEnv.contractsAdmin).setProxy("0x" + STABLE_JUMPER, testEnv.stableJumper.address)
+    await testEnv.provider.connect(testEnv.contractsAdmin).setProxy("0x" + STAKING_NFT, testEnv.stakingNFT.address)
    
     await testEnv.stakingNFT.initStakingNFT()
 

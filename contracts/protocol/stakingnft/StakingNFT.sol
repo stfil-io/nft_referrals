@@ -2,16 +2,16 @@
 pragma solidity ^0.8.0;
 
 import '../libraries/utils/FilAddress.sol';
-import '../../dependencies/openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {Initializable} from '../../dependencies/openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
 import {IStakingNFT} from '../../interfaces/IStakingNFT.sol';
 import {IERC721} from '../../dependencies/openzeppelin/contracts/token/ERC721/IERC721.sol';
 import {IERC721Receiver} from '../../dependencies/openzeppelin/contracts/token/ERC721/IERC721Receiver.sol';
-import {IAddressesProvider} from '../../interfaces/IAddressesProvider.sol';
-import {ProxyKey} from '../libraries/types/ProxyKey.sol';
+import {IStakingPoolAddressesProvider} from '../../interfaces/IStakingPoolAddressesProvider.sol';
 import {EnumerableSet} from '../../dependencies/openzeppelin/contracts/utils/structs/EnumerableSet.sol';
 import {IStableJumper} from '../../interfaces/IStableJumper.sol';
+import {Role} from '../libraries/types/Role.sol';
+import {ProxyKey} from '../libraries/types/ProxyKey.sol';
 
 /**
  * @title StakingNFT contract
@@ -20,11 +20,11 @@ import {IStableJumper} from '../../interfaces/IStableJumper.sol';
  * - Unstake
  * @author STFIL
  **/
-contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgradeable{
+contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable{
   using FilAddress for address;
   using EnumerableSet for EnumerableSet.UintSet;
 
-  IAddressesProvider internal _addressesProvider;   
+  IStakingPoolAddressesProvider internal _addressesProvider;   
 
   bool internal _paused;
 
@@ -41,6 +41,11 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
     uint256 power;
   }
 
+  modifier onlyContracstAdmin {
+    require(_addressesProvider.hasRole(Role.CONTRACTS_ADMIN_ROLE, msg.sender), Errors.CALLER_NOT_CONTRACTS_ADMIN);
+    _;
+  }
+
   modifier whenNotPaused() {
     _whenNotPaused();
     _;
@@ -55,10 +60,8 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
     _disableInitializers();
   }
 
-  function initialize(IAddressesProvider provider) external initializer {
+  function initialize(IStakingPoolAddressesProvider provider) external initializer {
     _addressesProvider = provider;
-
-    __Ownable_init();
   }
 
   /**
@@ -174,7 +177,7 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable, OwnableUpgra
    * @dev Set the _pause state of the staking NFT
    * @param val `true` to pause the staking NFT, `false` to un-pause it
    */
-  function setPause(bool val) external override onlyOwner {
+  function setPause(bool val) external override onlyContracstAdmin {
     _paused = val;
     if (_paused) {
       emit Paused();
