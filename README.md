@@ -36,19 +36,10 @@ fairness, and worth, StableJumper NFT is not just the presence of each user on S
 
 | Implementation Contracts | Address                                                                                                                             |
 |--------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| Provider                 | [0xA9DEFea3DD0868d3a5AB7A66C71b12Cc5949bc65](https://calibartion.filfox.info/en/address/0xA9DEFea3DD0868d3a5AB7A66C71b12Cc5949bc65) |
 | Referrals                | [0x53a9b338C69A0D3fe0E8365a2Abe181120b5A647](https://calibartion.filfox.info/en/address/0x53a9b338C69A0D3fe0E8365a2Abe181120b5A647)  |
-| Whitelist                | [0xdc6b399241C7eD81455dec1bc2189867e6248c23](https://calibartion.filfox.info/en/address/0xdc6b399241C7eD81455dec1bc2189867e6248c23)  |
-| StableJumper             | [0x237559A7EC38f72033e43a587824B1957Dc30Dc0](https://calibartion.filfox.info/en/address/0x237559A7EC38f72033e43a587824B1957Dc30Dc0)  |
-
-## Hyperspace Addresses
-
-| Implementation Contracts | Address                                                                                                                            |
-|--------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| Referrals                | [0x58dA636e1859D4014D53f87C6d86C39c45B9084b](https://hyperspace.filfox.info/en/address/0x58dA636e1859D4014D53f87C6d86C39c45B9084b) |
-| Whitelist                | [0x14C696df77BA5eCeAFC3da7B5E08dF4363922775](https://hyperspace.filfox.info/en/address/0x14C696df77BA5eCeAFC3da7B5E08dF4363922775) |
-| StableJumper             | [0x8A24a99530F15207AB65e300EE55F69Ce73F9113](https://hyperspace.filfox.info/en/address/0x8A24a99530F15207AB65e300EE55F69Ce73F9113) |
-
+| Whitelist                | [0x31D8cdDA241b2e088B7244B6602f43F15C034210](https://calibartion.filfox.info/en/address/0x31D8cdDA241b2e088B7244B6602f43F15C034210)  |
+| StableJumper             | [0x1c7bbb0E1B5967d8a5D86dcc40A80874d768191C](https://calibartion.filfox.info/en/address/0x1c7bbb0E1B5967d8a5D86dcc40A80874d768191C)  |
+| StakingNFT               | [0x9b35739775B66A3d3c62499Cd3aDEa2c673a77fa](https://calibartion.filfox.info/en/address/0x9b35739775B66A3d3c62499Cd3aDEa2c673a77fa)  |
 
 
 ## Repository Structure
