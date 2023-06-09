@@ -125,9 +125,6 @@ typechain-types
 **/db/history
 **/db_ganache/
 
-# ignore types
-types/
-
 # crytic and echidna
 crytic-export/
 
