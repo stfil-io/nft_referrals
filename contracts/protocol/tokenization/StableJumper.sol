@@ -60,7 +60,7 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable {
 
     address public constant STFIL_POOL_RISK_RESERVE = 0xff00000000000000000000000000000000000063;
 
-    modifier onlyContracstAdmin {
+    modifier onlyContractsAdmin {
         require(_addressesProvider.hasRole(Role.CONTRACTS_ADMIN_ROLE, msg.sender), Errors.CALLER_NOT_CONTRACTS_ADMIN);
         _;
     }
@@ -214,21 +214,21 @@ contract StableJumper is IStableJumper, ERC721EnumerableUpgradeable {
     /**
      * @dev Set the base URI address
      **/
-    function setBaseURI(string memory baseURI) external onlyContracstAdmin {
+    function setBaseURI(string memory baseURI) external onlyContractsAdmin {
         BASE_URI = baseURI;
     }
 
     /**
      * @dev Switch settings for public sale
      **/
-    function setPublicSaleOn(bool state) external onlyContracstAdmin {
+    function setPublicSaleOn(bool state) external onlyContractsAdmin {
         PUBLIC_SALE_ON = state;
     }
 
     /**
      * @dev Set the mint price
      **/
-    function setMintPrice(uint256 mintPrice) external onlyContracstAdmin {
+    function setMintPrice(uint256 mintPrice) external onlyContractsAdmin {
         MINT_PRICE = mintPrice;
     }
 
