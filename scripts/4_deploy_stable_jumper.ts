@@ -23,8 +23,8 @@ async function main() {
         console.log('Please set the "BASE_URI" environment variable')
         return;
     }
-    const mintPrice = ethers.utils.parseEther("10")
-    const maxSupply = 10000
+    const mintPrice = ethers.utils.parseEther("20")
+    const maxSupply = 5000
     const publicMintUpperLimit = 5000
 
     const provider = <StakingPoolAddressesProvider>await ethers.getContractAt("StakingPoolAddressesProvider", deployments.provider)
