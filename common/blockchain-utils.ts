@@ -15,8 +15,9 @@ import {
 } from '@glif/filecoin-address';
 import {BigNumber} from "ethers";
 import {BigNumber as BigNumberJS} from 'bignumber.js';
-import {MessagePartial, MsgLookup} from "filecoin.js/builds/dist/providers/Types";
+import {Message, MessagePartial, MsgLookup} from "filecoin.js/builds/dist/providers/Types";
 import {ask} from "./common";
+import {Token} from "@zondax/izari-filecoin";
 
 export const isValidContract = async (
     hre: HardhatRuntimeEnvironment,
@@ -53,10 +54,12 @@ export const accounts = async (
     hre: HardhatRuntimeEnvironment
 ): Promise<{
     deployer: SignerWithAddress,
+    emergencyAdmin: SignerWithAddress,
     contractsAdmin: SignerWithAddress,
+    treasury: SignerWithAddress,
 }> => {
-    const [deployer, contractsAdmin] = await hre.ethers.getSigners()
-    return {deployer, contractsAdmin};
+    const [deployer, emergencyAdmin, contractsAdmin, treasury] = await hre.ethers.getSigners()
+    return {deployer, emergencyAdmin, contractsAdmin, treasury};
 }
 
 export const getActorId = (id: number | string, networkPrefix: CoinType): string => {
@@ -147,7 +150,10 @@ export const interactCommitMessage = async (msg: MessagePartial, msgTag: string)
     const lotusClient = new LotusClient(httpConnector);
     const walletProvider = new LotusWalletProvider(lotusClient);
 
-    let message = await walletProvider.createMessage(msg);
+    msg.Nonce = await walletProvider.getNonce(msg.From);
+    msg = await gasEstimateMessageGas(msg, Token.fromMilli("100"));
+
+    let message = msg as Message;
     console.log(msgTag, "message to be sent:\n", JSON.stringify(message, null, 2));
 
     const fromAddr = newFromString(message.From);
@@ -155,25 +161,66 @@ export const interactCommitMessage = async (msg: MessagePartial, msgTag: string)
         throw new Error(`DELEGATED addresses are not supported`);
     }
 
-    // @ts-ignore
-    const bytesToBeSign = CID.parse(message.CID['/']).bytes;
-    console.log("Sign messages with lotus:")
-    console.log(`lotus wallet sign ${message['From']} ${hexEncode(bytesToBeSign)}`)
+    console.log("Choose the way you like:")
+    console.log("1 : louts")
+    console.log("2 : offline wallet")
+    let answer
+    do {
+        answer = await ask(`Choose(1/2):`);
+    } while (answer != "1" && answer != "2")
 
-    let signHexStr = await ask("Please input sign result: ");
-    let signBytes = new Uint8Array(hexDecode(signHexStr));
+    if (answer == "1") {
+        // @ts-ignore
+        const bytesToBeSign = CID.parse(message.CID['/']).bytes;
+        console.log("Sign messages with lotus:")
+        console.log(`lotus wallet sign ${message['From']} ${hexEncode(bytesToBeSign)}`)
 
-    let sign = {
-        Type: signBytes[0],
-        Data: base64Encode(signBytes.slice(1))
-    };
-    let pendingMsgCid = await walletProvider.sendSignedMessage({
-        Message: message,
-        Signature: sign
-    });
+        let pendingMsgCid
+        for (; ;) {
+            try {
+                let signHexStr = await ask("Please input sign result: ");
+                let signBytes = new Uint8Array(hexDecode(signHexStr));
+                let sign = {
+                    Type: signBytes[0],
+                    Data: base64Encode(signBytes.slice(1))
+                };
+                pendingMsgCid = await walletProvider.sendSignedMessage({
+                    Message: message,
+                    Signature: sign
+                });
+            } catch (e) {
+                console.log("SyntaxError:", (e as Error).message)
+                continue
+            }
+            break
+        }
 
-    console.log(msgTag, "message committed, message cid:", pendingMsgCid["/"]);
-    return pendingMsgCid["/"];
+        console.log(msgTag, "message committed, message cid:", pendingMsgCid["/"]);
+        return pendingMsgCid["/"];
+    } else {
+        console.log("Sign messages with offline wallet:")
+        console.log(JSON.stringify(message))
+
+        let pendingMsgCid
+        for (; ;) {
+            try {
+                let signStr = await ask("Please input sign result: ");
+                const signedMessage = JSON.parse(signStr)
+                if (!signedMessage || typeof signedMessage != "object") {
+                    console.log("SyntaxError: please input again")
+                    continue
+                }
+                pendingMsgCid = await walletProvider.sendSignedMessage(signedMessage);
+            } catch (e) {
+                console.log("SyntaxError: please input again", (e as Error).message)
+                continue
+            }
+            break
+        }
+
+        console.log(msgTag, "message committed, message cid:", pendingMsgCid["/"]);
+        return pendingMsgCid["/"];
+    }
 }
 
 export const wait = async (cid: string): Promise<MsgLookup> => {
@@ -185,6 +232,40 @@ export const wait = async (cid: string): Promise<MsgLookup> => {
     console.log("Waiting message", cid, "on chain");
     let res = await lotusClient.conn.request({method: 'Filecoin.StateWaitMsg', params: [{"/": cid}, 1, 1, true]});
     console.log("Message on chain");
+    return res;
+}
+
+export const searchMsg = async (cid: string): Promise<MsgLookup> => {
+    const httpConnector = new HttpJsonRpcConnector({
+        url: useEnv("NETWORK_GATEWAY"),
+    });
+    const lotusClient = new LotusClient(httpConnector);
+
+    let res = await lotusClient.conn.request({method: 'Filecoin.StateSearchMsg', params: [[], {"/": cid}, 10, true]});
+    return res;
+}
+
+export const gasEstimateFeeCap = async (msg: MessagePartial, maxFee: number): Promise<number> => {
+    const httpConnector = new HttpJsonRpcConnector({
+        url: useEnv("NETWORK_GATEWAY"),
+    });
+    const lotusClient = new LotusClient(httpConnector);
+
+    let res = await lotusClient.conn.request({method: 'Filecoin.GasEstimateFeeCap', params: [msg, maxFee, []]});
+    return res;
+}
+
+export const gasEstimateMessageGas = async (msg: MessagePartial, maxFee: Token): Promise<Message> => {
+    const httpConnector = new HttpJsonRpcConnector({
+        url: useEnv("NETWORK_GATEWAY"),
+    });
+    const lotusClient = new LotusClient(httpConnector);
+
+    let res = await lotusClient.conn.request({
+        method: 'Filecoin.GasEstimateMessageGas', params: [msg, {
+            MaxFee: maxFee.toAtto()
+        }, []]
+    });
     return res;
 }
 
@@ -205,16 +286,20 @@ export const interactMultisigMessage = async (
         Params: proposeParams,
     }
     const proposeMsgCid = await interactCommitMessage(proposeMsg, "Propose")
-    const msgLookUp = await wait(proposeMsgCid);
 
-    let proposeReturn = dagCborDecode(base64Decode(msgLookUp.Receipt.Return));
-    // @ts-ignore
-    const txId = Number.parseInt(proposeReturn[0]);
-    console.log("Propose txId:", txId);
-
-    let approveAddr = newFromString(await ask("Input approve address: "));
+    let txId
+    try {
+        const msgLookUp = await wait(proposeMsgCid);
+        let proposeReturn = dagCborDecode(base64Decode(msgLookUp.Receipt.Return));
+        // @ts-ignore
+        txId = Number.parseInt(proposeReturn[0]);
+        console.log("Propose txId:", txId);
+    } catch (e) {
+        txId = Number.parseInt(await ask("Propose txId:"));
+    }
 
     for (let i = 0; i < multisig.approvalThreshold - 1; i++) {
+        let approveAddr = newFromString(await ask("Input approve address: "));
         const msgCid = await interactCommitMessage({
             "From": addressToString(networkPrefix, approveAddr),
             "To": multisig.address,
@@ -222,7 +307,11 @@ export const interactMultisigMessage = async (
             "Method": 3,
             "Params": Buffer.from(dagCborEncode([txId, new Uint8Array()])).toString('base64')
         }, "Approve")
-        await wait(msgCid);
+        try {
+            await wait(msgCid);
+        } catch (e) {
+            console.log("Please wait for the message to be confirmed before performing the next step");
+        }
     }
 
 }
