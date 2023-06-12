@@ -29,8 +29,9 @@ fairness, and worth, StableJumper NFT is not just the presence of each user on S
 | Implementation Contracts | Address                                                                                                                  |
 |--------------------------|--------------------------------------------------------------------------------------------------------------------------|
 | Referrals                | [0x4EA1Cdd7e6867183fFE88E033719e6765Cd0010c](https://filfox.info/en/address/0x4EA1Cdd7e6867183fFE88E033719e6765Cd0010c)  |
-| Whitelist                | [0x44790Ced0E86DF20b3b269CB21e95dE7F1AE4812](https://filfox.info/en/address/0x44790Ced0E86DF20b3b269CB21e95dE7F1AE4812)  |
-| StableJumper             | [0x4928267849D8f80862e89B766be407A6716566E2](https://filfox.info/en/address/0x4928267849D8f80862e89B766be407A6716566E2)  |
+| Whitelist                | [0xda04B93801B115452c1c8eE4B7C53FB88B48E924](https://filfox.info/en/address/0xda04B93801B115452c1c8eE4B7C53FB88B48E924)  |
+| StableJumper             | [0x4342bCbD39c9238B125be67b40656d94EcC5233a](https://filfox.info/en/address/0x4342bCbD39c9238B125be67b40656d94EcC5233a)  |
+| StakingNFT               | [0x70D62c00D672a01bC22dF437B186B026629B4a6B](https://filfox.info/en/address/0x70D62c00D672a01bC22dF437B186B026629B4a6B)  |
 
 ## Calibration Addresses
 
