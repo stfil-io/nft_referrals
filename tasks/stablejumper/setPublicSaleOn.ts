@@ -1,6 +1,6 @@
 import {getDeploymentFile, getDeploymentFilename, IDeployments} from '../../common/common'
 import {task} from "hardhat/config";
-import {isTargetNetwork} from "../../common/blockchain-utils";
+import {accounts, isTargetNetwork} from "../../common/blockchain-utils";
 import {boolean} from "hardhat/internal/core/params/argumentTypes";
 import {StableJumper} from "../../typechain-types";
 
@@ -11,9 +11,12 @@ task("set-public-sale-on", "Set public sale on")
 
         const deploymentFilename = getDeploymentFilename(hre.network.name)
         const deployments = <IDeployments>getDeploymentFile(deploymentFilename);
-        
+
         const StableJumperAddress = <StableJumper>await hre.ethers.getContractAt("StableJumper", deployments.stableJumper)
-        const tx = await StableJumperAddress.setPublicSaleOn(params.state)
+        const {contractsAdmin} = await accounts(hre);
+        const tx = await StableJumperAddress
+            .connect(contractsAdmin)
+            .setPublicSaleOn(params.state)
         await tx.wait()
         console.log(`Successfully change whitelist merkle root
         tx hash:  ${tx.hash}`)

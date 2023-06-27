@@ -54,12 +54,10 @@ export const accounts = async (
     hre: HardhatRuntimeEnvironment
 ): Promise<{
     deployer: SignerWithAddress,
-    emergencyAdmin: SignerWithAddress,
     contractsAdmin: SignerWithAddress,
-    treasury: SignerWithAddress,
 }> => {
-    const [deployer, emergencyAdmin, contractsAdmin, treasury] = await hre.ethers.getSigners()
-    return {deployer, emergencyAdmin, contractsAdmin, treasury};
+    const [deployer, contractsAdmin] = await hre.ethers.getSigners()
+    return {deployer, contractsAdmin};
 }
 
 export const getActorId = (id: number | string, networkPrefix: CoinType): string => {
