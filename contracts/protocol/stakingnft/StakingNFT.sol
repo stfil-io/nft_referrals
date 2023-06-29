@@ -117,6 +117,7 @@ contract StakingNFT is IStakingNFT, IERC721Receiver, Initializable{
     uint256 tokenId,
     bytes calldata data
   ) external returns (bytes4) {
+    emit ERC721Received(operator, from, tokenId, data);
     return IERC721Receiver.onERC721Received.selector;
   }
 

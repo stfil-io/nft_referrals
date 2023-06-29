@@ -28,6 +28,15 @@ interface IStakingNFT {
   event Unpaused();
 
   /**
+   * @dev Emitted on onERC721Received()
+   * @param operator address represents the operator
+   * @param from address representing the previous owner of the given token ID
+   * @param tokenId uint256 ID of the token to be transferred
+   * @param data bytes optional data to send along with the call
+   **/
+  event ERC721Received(address indexed operator, address indexed from, uint256 tokenId, bytes data);
+
+  /**
    * @dev Initializes the staking NFT, activating it, assigning an stableJumper NFTs
    **/
   function initStakingNFT() external;
